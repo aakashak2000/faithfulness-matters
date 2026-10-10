@@ -1,0 +1,118 @@
+{
+  "basic": {
+    "clf": {
+      "n": 7990,
+      "finite": true,
+      "text_norm_mean": 1.0,
+      "text_norm_min": 1.0,
+      "class_counts": {
+        "anger": 887,
+        "disgust": 217,
+        "fear": 215,
+        "joy": 1394,
+        "neutral": 3767,
+        "sadness": 546,
+        "surprise": 964
+      }
+    },
+    "gate": {
+      "n": 1998,
+      "finite": true,
+      "text_norm_mean": 1.0,
+      "text_norm_min": 1.0,
+      "class_counts": {
+        "anger": 222,
+        "disgust": 54,
+        "fear": 53,
+        "joy": 349,
+        "neutral": 942,
+        "sadness": 137,
+        "surprise": 241
+      }
+    },
+    "dev": {
+      "n": 1108,
+      "finite": true,
+      "text_norm_mean": 1.0,
+      "text_norm_min": 1.0,
+      "class_counts": {
+        "anger": 153,
+        "disgust": 22,
+        "fear": 40,
+        "joy": 163,
+        "neutral": 469,
+        "sadness": 111,
+        "surprise": 150
+      }
+    },
+    "test": {
+      "n": 2610,
+      "finite": true,
+      "text_norm_mean": 1.0,
+      "text_norm_min": 1.0,
+      "class_counts": {
+        "anger": 345,
+        "disgust": 68,
+        "fear": 50,
+        "joy": 402,
+        "neutral": 1256,
+        "sadness": 208,
+        "surprise": 281
+      }
+    }
+  },
+  "clf_vs_gate_max_proportion_gap": 0.0004,
+  "duplicate_audio": {
+    "within_test": 22,
+    "test_in_train": 3,
+    "dev_in_train": 0,
+    "clf_in_gate": 7
+  },
+  "csv_alignment": {
+    "dev": {
+      "bundle_rows": 1108,
+      "csv_rows": 1109,
+      "skipped_csv_rows": [
+        "dia110_utt7"
+      ],
+      "exact_matches": 1108,
+      "fuzzy_matches": 0,
+      "min_cosine": 1.0,
+      "label_agreement_with_csv": 1.0,
+      "rows_with_non_ascii_text": 308,
+      "winning_decoding_on_non_ascii_rows": {
+        "raw_meld_c1": 308
+      }
+    },
+    "test": {
+      "bundle_rows": 2610,
+      "csv_rows": 2610,
+      "skipped_csv_rows": [],
+      "exact_matches": 2610,
+      "fuzzy_matches": 0,
+      "min_cosine": 1.0,
+      "label_agreement_with_csv": 1.0,
+      "rows_with_non_ascii_text": 757,
+      "winning_decoding_on_non_ascii_rows": {
+        "raw_meld_c1": 742,
+        "utf8": 15
+      }
+    }
+  },
+  "legacy_standalone_vs_bundle": {
+    "dev": {
+      "rows": 1108,
+      "same_row_count": true,
+      "rowwise_cosine_mean": 0.4752,
+      "identical": false,
+      "string_labels_agree": 0.2482
+    },
+    "test": {
+      "rows": 2610,
+      "same_row_count": true,
+      "rowwise_cosine_mean": 0.4725,
+      "identical": false,
+      "string_labels_agree": 0.2893
+    }
+  }
+}

@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+
+# large local assets stay out of git
+data/
+*.pt
+*.npz
+checkpoints/
+
+# keep small result tables and figures in git
+!results/*.csv
+!results/*.json
+!figures/*.png
+.envrc
+MIDTERM_STATUS.md
+READING_GUIDE.md

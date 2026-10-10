@@ -1,0 +1,9 @@
+pair,method,n_total_per_seed,n_signal_tied,n_effect_tied,n_effect_below_0.02
+Learned gate ← gate weight,mean,2610,0,0,246
+Learned gate ← gate weight,blank,2610,0,0,241
+Confidence fusion ← confidence,mean,2610,0,0,243
+Confidence fusion ← confidence,blank,2610,0,0,333
+Learned gate ← confidence,mean,2610,0,0,246
+Learned gate ← confidence,blank,2610,0,0,241
+Average fusion ← confidence,mean,2610,0,0,356
+Average fusion ← confidence,blank,2610,0,0,432
