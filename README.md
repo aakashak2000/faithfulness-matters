@@ -8,8 +8,7 @@ We take a text + audio emotion classifier on MELD, read off what it *claims* abo
 mattered (fusion-gate weights, per-modality confidence), and test that claim against what actually
 happens to its prediction when we remove the text or the audio.
 
-**Start here:** [`MIDTERM_STATUS.md`](MIDTERM_STATUS.md) has the results, what they mean, and what's left.
-[`READING_GUIDE.md`](READING_GUIDE.md) has the papers and who owns which.
+**Team:** the midterm status report (results, what they mean, what's left) and the reading guide are shared separately in the group chat. Read those first, then come back here for the code.
 
 ## Pipeline
 
