@@ -136,11 +136,12 @@ def fig_agreement(ci):
         lo = min(ci[ci.metric.isin(["agreement", "always_text_baseline"])].ci_low.min(),
                  ci[ci.metric == "always_text_baseline"].estimate.min())
         ax.set_xlim(max(0.0, np.floor((lo - 0.03) * 20) / 20), 1.0)
-        ax.set_xlabel("Share of utterances where the signal picks the modality\nwhose removal changed the prediction more")
         ax.grid(axis="y", visible=False)
     axes[0].set_yticks(y, labels)
     axes[0].legend(loc="lower left", bbox_to_anchor=(0, 1.12), ncols=2)
     fig.tight_layout()
+    fig.supxlabel("Share of utterances where the signal picks the modality whose removal changed the prediction more",
+                  fontsize=9, color=INK2, y=-0.04)
     fig.savefig(FIGURES / "fig2_agreement_vs_baseline.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
@@ -164,6 +165,8 @@ def fig_calibration(log):
     ax.axvspan(0, 0.5, color=GRID, alpha=0.45, lw=0)
     ax.axhline(0.5, color=MUTED, lw=1, ls="--")
     ax.text(0.02, 0.06, 'gate says "audio\nmattered more"', color=INK2, fontsize=8, transform=ax.transAxes)
+    ax.text(0.99, 0.03, "bins with under 30 utterance-rows not drawn (0.0 to 0.1: n=4)", color=MUTED,
+            fontsize=7, ha="right", transform=ax.transAxes)
     ax.set_ylim(0, 1.02)
     ax.set_ylabel("Share where removing text\nchanged the prediction more")
     ax.set_title("Does the gate's text weight predict which modality matters?", loc="left")
@@ -189,7 +192,7 @@ def fig_scatter(log):
     ax.scatter(s, e, s=9, color=BLUE, alpha=0.35, linewidths=0)
     ax.set_xlabel("Gate signal: text weight − audio weight")
     ax.set_ylabel("Measured effect: |Δp| text removed − |Δp| audio removed")
-    ax.set_title("Learned gate, mean replacement (seed 0)", loc="left")
+    ax.set_title("Learned gate, mean replacement, seed 0 (2,610 utterances)", loc="left")
     for (x, yv, txt) in [(0.95, 0.95, "both say text"), (0.05, 0.05, "both say audio"),
                          (0.05, 0.95, "gate: audio\neffect: text")]:
         ax.text(x, yv, txt, transform=ax.transAxes, ha="right" if x > 0.5 else "left",

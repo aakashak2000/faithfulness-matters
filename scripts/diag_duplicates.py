@@ -5,9 +5,13 @@ Identical audio and text embeddings: possibly a duplicated input clip, a preproc
 Identical audio but different text embeddings: suspicious collision; the audio for at
   least one row may not belong to its utterance. See diag_source_files.py to trace it.
 
+Also writes results/audio_duplicates.json: how the test-set duplicate counts break down.
+
 Usage: python scripts/diag_duplicates.py
 """
 from collections import defaultdict
+
+import json
 
 import pandas as pd
 import torch
@@ -46,3 +50,25 @@ for g in sorted(dups, key=lambda g: (-len(g), g[0])):
         print("   ", describe(split, i))
 
 print(f"\nSummary: {same_text} groups with identical text, {diff_text} groups with different text")
+
+# Test-row breakdown. "audio_shared" (42) = within-test rows + rows shared only with train.
+within_groups = within_rows = train_only_rows = 0
+for g in dups:
+    n_test = sum(1 for split, _ in g if split == "test")
+    n_other = len(g) - n_test
+    if n_test > 1:
+        within_groups += 1
+        within_rows += n_test
+    if n_test == 1 and n_other:
+        train_only_rows += 1
+summary = {
+    "test_rows": len(S["test"]["audio"]),
+    "within_test_groups": within_groups,
+    "within_test_rows": within_rows,
+    "within_test_extra_copies": within_rows - within_groups,
+    "test_rows_shared_only_with_train": train_only_rows,
+    "audio_shared_total": within_rows + train_only_rows,
+}
+with open("results/audio_duplicates.json", "w") as f:
+    json.dump(summary, f, indent=2)
+print("\nWrote results/audio_duplicates.json", summary)

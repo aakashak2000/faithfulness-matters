@@ -5,11 +5,14 @@ embedding is shared with another row, then groups them.
   identical file hashes   -> MELD itself ships copied clips (dataset issue)
   different file hashes   -> files differ, so the collision came from our extraction
 
+Also writes results/source_file_check.json (group counts and the folder checked).
+
 Usage:
   python scripts/diag_source_files.py <folder with diaX_uttY.wav or .mp4 files> [split]
   e.g. python scripts/diag_source_files.py ~/MELD.Raw/output_repeated_splits_test test
 """
 import hashlib
+import json
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -69,6 +72,9 @@ def main(folder, split):
 
     print(f"\nSummary ({split}): {identical} groups with identical source files, "
           f"{differ} groups with different source files, {missing} with missing files")
+    with open("results/source_file_check.json", "w") as f:
+        json.dump({"split": split, "folder": folder.name, "groups_identical": identical,
+                   "groups_differ": differ, "groups_missing_file": missing}, f, indent=2)
 
 
 if __name__ == "__main__":
