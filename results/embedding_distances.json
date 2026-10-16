@@ -1,0 +1,29 @@
+{
+  "note": "average cosine similarity to the 2,610 real test embeddings; distance = 1 - similarity. Computed from data/intervention_embeddings.pt and the clf-split mean.",
+  "replacement": {
+    "silent_audio": {
+      "mean_cosine_similarity": 0.2983,
+      "mean_cosine_distance": 0.7017,
+      "min": 0.0336,
+      "max": 0.9265
+    },
+    "mean_train_audio": {
+      "mean_cosine_similarity": 0.6819,
+      "mean_cosine_distance": 0.3181,
+      "min": 0.1536,
+      "max": 0.8545
+    },
+    "empty_text": {
+      "mean_cosine_similarity": 0.1793,
+      "mean_cosine_distance": 0.8207,
+      "min": -0.0764,
+      "max": 0.6363
+    },
+    "mean_train_text": {
+      "mean_cosine_similarity": 0.3726,
+      "mean_cosine_distance": 0.6274,
+      "min": 0.0295,
+      "max": 0.6127
+    }
+  }
+}

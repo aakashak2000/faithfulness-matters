@@ -1,0 +1,21 @@
+{
+  "seed0": {
+    "median_abs_head_term_text": 0.11566642671823502,
+    "median_abs_reweight_term_text": 0.005052867594356546,
+    "median_abs_head_term_audio": 0.025320302695035934,
+    "median_abs_reweight_term_audio": 0.022105873665195227
+  },
+  "seed1": {
+    "median_abs_head_term_text": 0.11383085697889328,
+    "median_abs_reweight_term_text": 0.0047750459058399156,
+    "median_abs_head_term_audio": 0.025251425802707672,
+    "median_abs_reweight_term_audio": 0.021720793109817983
+  },
+  "seed2": {
+    "median_abs_head_term_text": 0.11664681136608124,
+    "median_abs_reweight_term_text": 0.005155632076007362,
+    "median_abs_head_term_audio": 0.02407991513609886,
+    "median_abs_reweight_term_audio": 0.022411948324126244
+  },
+  "share_sign_of_effect_difference_changes_dp": 0.06871008939974457
+}

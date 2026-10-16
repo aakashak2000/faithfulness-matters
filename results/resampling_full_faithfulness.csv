@@ -1,0 +1,81 @@
+pair,model,signal,method,metric,estimate,ci_low,ci_high
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,mean,agreement,0.7965517241379311,0.7804227719492394,0.8117669153794094
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,mean,always_text_baseline,0.7825031928480204,0.7652976091337705,0.801132208637512
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,mean,gain,0.014048531289910682,-0.007338299697047115,0.036377860166151924
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,mean,spearman,0.7344239303264152,0.7128292841483755,0.753322762275769
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,blank,agreement,0.7730523627075351,0.7561896819556864,0.7901139560643781
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,blank,always_text_baseline,0.8052362707535122,0.7878207229933141,0.8218263226605163
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,blank,gain,-0.03218390804597715,-0.0544976315336767,-0.010028348214285632
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,blank,spearman,0.6141697314240461,0.5854250066540434,0.6414410626243654
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample,agreement,0.792337164750958,0.7765502096503301,0.8078330792172436
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample,always_text_baseline,0.7744572158365263,0.7561158438221748,0.7923221212696377
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample,gain,0.017879948914431676,-0.0030060409523360587,0.04028107998231941
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample,spearman,0.7038459473505819,0.679639667626606,0.7250412238764667
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample_alt,agreement,0.7905491698595147,0.7739553710904388,0.8060352236529992
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample_alt,always_text_baseline,0.7616858237547893,0.7424616422265863,0.7801656366432728
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample_alt,gain,0.028863346104725407,0.007153082829135307,0.0516856198367144
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample_alt,spearman,0.6953481927132751,0.6704864448033182,0.717286623864618
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample_full,agreement,0.7922094508301405,0.7765601367814401,0.8076390574706442
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample_full,always_text_baseline,0.7735632183908047,0.7559702395004468,0.7914705994106372
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample_full,gain,0.01864623243933583,-0.0025096408736696467,0.041134088003044154
+Learned gate ← gate weight,fusion_learned_gate,gate_w_t,resample_full,spearman,0.7046983877720892,0.6799262088449979,0.7257762541906695
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,mean,agreement,0.927330779054917,0.9183005847790209,0.9363396341092277
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,mean,always_text_baseline,0.6883780332056194,0.6705152434474958,0.7066521582094488
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,mean,gain,0.2389527458492976,0.22003921793066436,0.2568562638909718
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,mean,spearman,0.9446715138240234,0.9392365933757374,0.9491869604387929
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,blank,agreement,0.7881226053639847,0.7742989866309015,0.8026291042665008
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,blank,always_text_baseline,0.7095785440613026,0.6918862534834939,0.7269302969707698
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,blank,gain,0.0785440613026821,0.05858801339191176,0.10052441368370486
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,blank,spearman,0.5771161265278263,0.5438360605681468,0.6090157998943436
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample,agreement,0.9148148148148149,0.9060741797763238,0.9239227486774602
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample,always_text_baseline,0.6960408684546616,0.6783802727635906,0.7131544227025136
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample,gain,0.21877394636015324,0.19944780629970996,0.23729785396319175
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample,spearman,0.9202049843860899,0.9130841353598373,0.9262258113716205
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample_alt,agreement,0.90727969348659,0.8969473326085615,0.9165759696409883
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample_alt,always_text_baseline,0.6831417624521072,0.665139729332415,0.7006230639730641
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample_alt,gain,0.22413793103448276,0.20411747197758484,0.2426985795055146
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample_alt,spearman,0.9162101611987783,0.9081848706629869,0.9224378517208038
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample_full,agreement,0.9139208173690933,0.9046519432696957,0.9227926902006351
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample_full,always_text_baseline,0.6892720306513409,0.6723819816791653,0.7065271522951017
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample_full,gain,0.22464878671775235,0.20580857630067545,0.24214260602502746
+Confidence fusion ← confidence,fusion_confidence,conf_w_t,resample_full,spearman,0.9199667011204039,0.9123394517786674,0.926045636645407
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,mean,agreement,0.7925925925925926,0.7791820654269046,0.8056126837396331
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,mean,always_text_baseline,0.7825031928480204,0.7652976091337705,0.801132208637512
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,mean,gain,0.010089399744572236,-0.01153219027884427,0.029216736382227316
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,mean,spearman,0.6590334177204374,0.6347081891486068,0.6833925264429718
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,blank,agreement,0.7034482758620689,0.6872690689294432,0.7194945376006219
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,blank,always_text_baseline,0.8052362707535122,0.7878207229933141,0.8218263226605163
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,blank,gain,-0.1017879948914433,-0.12511397780080685,-0.0808748857904047
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,blank,spearman,0.29698904085806244,0.2586842639837171,0.33335230638248475
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample,agreement,0.8014048531289911,0.7883497558854151,0.8144942808515151
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample,always_text_baseline,0.7744572158365263,0.7561158438221748,0.7923221212696377
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample,gain,0.026947637292464854,0.004020752269779493,0.04878426315859482
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample,spearman,0.6816466810910325,0.6576218987008147,0.7048127001499263
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample_alt,agreement,0.79757343550447,0.7839023416511749,0.8110773657289001
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample_alt,always_text_baseline,0.7616858237547893,0.7424616422265863,0.7801656366432728
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample_alt,gain,0.03588761174968069,0.013361070848828788,0.05970366536133126
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample_alt,spearman,0.6770841044697292,0.6544027923542401,0.699302944526379
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample_full,agreement,0.7984674329501916,0.7850856237592285,0.8115445597025299
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample_full,always_text_baseline,0.7735632183908047,0.7559702395004468,0.7914705994106372
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample_full,gain,0.02490421455938696,0.003057442713744352,0.047510098732205394
+Learned gate ← confidence,fusion_learned_gate,conf_w_t,resample_full,spearman,0.6737569799051522,0.6506635315184042,0.6971159066351611
+Average fusion ← confidence,fusion_average,conf_w_t,mean,agreement,0.8980842911877395,0.8863185572941764,0.9081759194160075
+Average fusion ← confidence,fusion_average,conf_w_t,mean,always_text_baseline,0.6752234993614303,0.6582178396430375,0.6927855646954254
+Average fusion ← confidence,fusion_average,conf_w_t,mean,gain,0.22286079182630913,0.20457257823423766,0.23951418377271777
+Average fusion ← confidence,fusion_average,conf_w_t,mean,spearman,0.8951573058469351,0.8852857182264416,0.904269643686481
+Average fusion ← confidence,fusion_average,conf_w_t,blank,agreement,0.7379310344827585,0.7220940675142968,0.7551392782826715
+Average fusion ← confidence,fusion_average,conf_w_t,blank,always_text_baseline,0.660919540229885,0.6423473124138902,0.6797225441096199
+Average fusion ← confidence,fusion_average,conf_w_t,blank,gain,0.07701149425287357,0.05679390711578143,0.0981038235966461
+Average fusion ← confidence,fusion_average,conf_w_t,blank,spearman,0.5110185241871871,0.4753189268498703,0.5454572208330016
+Average fusion ← confidence,fusion_average,conf_w_t,resample,agreement,0.8931034482758621,0.8815663993741925,0.9032484190252665
+Average fusion ← confidence,fusion_average,conf_w_t,resample,always_text_baseline,0.6694763729246488,0.652864275244531,0.686047263951081
+Average fusion ← confidence,fusion_average,conf_w_t,resample,gain,0.2236270753512133,0.2060998999500757,0.24019286303630372
+Average fusion ← confidence,fusion_average,conf_w_t,resample,spearman,0.891670086147441,0.8814169033860264,0.9010164856010311
+Average fusion ← confidence,fusion_average,conf_w_t,resample_alt,agreement,0.8800766283524905,0.8682528273184539,0.8906883376404374
+Average fusion ← confidence,fusion_average,conf_w_t,resample_alt,always_text_baseline,0.6646232439335887,0.6483670655302294,0.6817471343624673
+Average fusion ← confidence,fusion_average,conf_w_t,resample_alt,gain,0.21545338441890172,0.19795933736023483,0.2325465377654336
+Average fusion ← confidence,fusion_average,conf_w_t,resample_alt,spearman,0.887354633197391,0.8770250263093948,0.8960578945405046
+Average fusion ← confidence,fusion_average,conf_w_t,resample_full,agreement,0.8952745849297573,0.8843969648051905,0.9055345880974023
+Average fusion ← confidence,fusion_average,conf_w_t,resample_full,always_text_baseline,0.6721583652618136,0.656059378006355,0.688950905764321
+Average fusion ← confidence,fusion_average,conf_w_t,resample_full,gain,0.2231162196679437,0.20535780206000953,0.23969819192424827
+Average fusion ← confidence,fusion_average,conf_w_t,resample_full,spearman,0.8917831155993317,0.8816914026475109,0.9010650692038022

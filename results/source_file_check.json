@@ -1,0 +1,7 @@
+{
+  "split": "test",
+  "folder": "output_repeated_splits_test",
+  "groups_identical": 17,
+  "groups_differ": 0,
+  "groups_missing_file": 0
+}
