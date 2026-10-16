@@ -26,12 +26,12 @@ The final report must answer: what we tried to do (no jargon); who cares; how it
 - Our evaluation's output, per utterance: does the modality the signal favours match the modality whose removal changes the prediction more? Aggregated as agreement, gain over an always-text baseline, and Spearman correlation.
 
 **Hypotheses.**
-- H1 (midterm): on natural utterances, importance signals agree with intervention effects beyond a trivial baseline. *Status: not supported for the learned gate (gain +0.014, 95% CI −0.007 to 0.036 with mean replacement; −0.032 with blank replacement); the confidence rule beats the baseline but likely by construction.*
+- H1 (midterm): on natural utterances, importance signals agree with intervention effects beyond a trivial baseline. *Status: not distinguishable from the always-text baseline for the learned gate. Under the primary intervention (full-pool resampling) its gain is +0.019, 95% CI −0.003 to 0.041, so at most a small edge (point estimates across non-blank methods +0.014 to +0.029; `results/resampling_full_faithfulness.csv`). Blank replacement gives −0.032, which we treat as an artifact of the stand-in being far from real data, not as a finding. The confidence rule beats the baseline (+0.225) but part of that is structural, and it cannot be told apart from the gate on the gate's own model (`results/paired_gate_vs_confidence.csv`).*
 - H2 (final, from the proposal): agreement drops when text and audio carry conflicting emotion. *Status: not yet tested.*
 
 **Importance signals tested.** Learned gate weight (primary), confidence weight `c_t / (c_t + c_a)` (primary for its own model, secondary on others). Optional third: gradient-based (Integrated Gradients).
 
-**Interventions.** Replace one modality's embedding with (a) the mean training embedding, or (b) the embedding of empty text / length-matched silence. Rerun the full model.
+**Interventions ("intervention tests").** Replace one modality's embedding and rerun the full model. Primary: full-pool resampling (average the output over every classifier-split utterance as donor; donors from the same dialogue and shared-audio clips excluded). Sensitivity checks: (a) the mean training embedding, (b) the embedding of empty text / length-matched silence, (c) two 50-donor resampling draws.
 
 ## 3. Proposal commitments
 

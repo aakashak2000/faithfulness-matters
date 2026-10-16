@@ -32,7 +32,7 @@ There is no test suite. A step "passes" when its script runs clean and its print
 ## Gotchas
 
 - Legacy text embeddings were computed on the raw 2018 MELD CSV text (apostrophes stored as `\x92`). This is intentional for reproducibility; `01_build_dataset.py` aligns with a `raw_meld_c1` decoding.
-- 42 test rows share byte-identical audio with a neighbour (MELD's own files). They are flagged `audio_shared`; report metrics with and without them.
+- 42 test rows are flagged `audio_shared`: 39 share byte-identical audio with another test row (17 groups, MELD's own files) and 3 share it only with the classifier train split. Breakdown in `results/audio_duplicates.json`. Report metrics with and without them.
 - Training runs on CPU on purpose (determinism). Only step 3 uses MPS.
 - The confidence rule's high agreement is partly structural (its weight is built from the same probabilities it mixes). Never present it as evidence of a good explanation without that caveat.
 
