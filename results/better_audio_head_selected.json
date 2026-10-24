@@ -1,0 +1,17 @@
+{
+  "selected": {
+    "features": "concat12-16-20-24",
+    "pool": "mean+std",
+    "wd": 0.1,
+    "dim": 8192,
+    "dev_wF1": 0.4623340743580616,
+    "dev_macroF1": 0.3701607610100238,
+    "test_wF1": 0.46304113013669773,
+    "test_macroF1": 0.3265047768908819
+  },
+  "reference_step10": {
+    "dev_wF1": 0.3827,
+    "test_wF1": 0.3955
+  },
+  "candidate_variant": true
+}

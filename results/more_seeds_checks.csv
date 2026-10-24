@@ -1,0 +1,3 @@
+check,value
+"retrain seed 0 vs checkpoints/seed0.pt, max abs weight diff",0.0
+"interventions on seeds 0..2 reproduce the committed logs, max abs diff < 1e-5",1e-05

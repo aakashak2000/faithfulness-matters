@@ -1,0 +1,16 @@
+{
+  "selected": {
+    "features": "all25",
+    "wd": 1.0,
+    "dim": 25600,
+    "dev_wF1": 0.5900978707569553,
+    "dev_macroF1": 0.4666547476119259,
+    "test_wF1": 0.5912448005081159,
+    "test_macroF1": 0.4390740493911733
+  },
+  "reference_minilm": {
+    "dev_wF1": 0.47542323212266624,
+    "test_wF1": 0.49223068474219045
+  },
+  "candidate_variant": true
+}

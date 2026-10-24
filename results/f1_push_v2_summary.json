@@ -1,0 +1,48 @@
+{
+  "stage2": {
+    "text": {
+      "modality": "text",
+      "mode": "prev",
+      "k": 5,
+      "wd": 0.01,
+      "alpha": 0.5,
+      "dev_wF1": 0.6299030803240666,
+      "test_wF1_at_dev_alpha": 0.6250295126469686
+    },
+    "audio": {
+      "modality": "audio",
+      "mode": "both",
+      "k": 3,
+      "wd": 0.01,
+      "alpha": 0.5,
+      "dev_wF1": 0.5179095022099248,
+      "test_wF1_at_dev_alpha": 0.5050416496703588
+    }
+  },
+  "stage2_causal": {
+    "text": {
+      "modality": "text",
+      "mode": "prev",
+      "k": 5,
+      "wd": 0.01,
+      "alpha": 0.5,
+      "dev_wF1": 0.6299030803240666,
+      "test_wF1_at_dev_alpha": 0.6250295126469686
+    },
+    "audio": {
+      "modality": "audio",
+      "mode": "prev",
+      "k": 3,
+      "wd": 0.1,
+      "alpha": 0.25,
+      "dev_wF1": 0.5084135091456531,
+      "test_wF1_at_dev_alpha": 0.4886371080510648
+    }
+  },
+  "alpha_by_stage": {
+    "S0 control (MiniLM text + audio, no context)": 0.25,
+    "S1 RoBERTa text + audio, no context": 0.25,
+    "S2 + context, bidirectional": 0.5,
+    "S2c + context, previous only (causal)": 0.5
+  }
+}

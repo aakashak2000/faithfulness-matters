@@ -1,0 +1,59 @@
+{
+  "text_head": {
+    "features": "all25",
+    "wd": 1.0
+  },
+  "stage2": {
+    "text": {
+      "modality": "text",
+      "mode": "both",
+      "k": 5,
+      "wd": 0.001,
+      "dev_wF1": 0.558473027781954,
+      "dev_macro": 0.43981957969276764,
+      "test_wF1": 0.5651511231910897,
+      "test_macro": 0.4195564804799258
+    },
+    "audio": {
+      "modality": "audio",
+      "mode": "prev",
+      "k": 3,
+      "wd": 0.01,
+      "dev_wF1": 0.3823007735776592,
+      "dev_macro": 0.32982421944355256,
+      "test_wF1": 0.3733404049523462,
+      "test_macro": 0.2911050099689944
+    }
+  },
+  "stage2_causal": {
+    "text": {
+      "modality": "text",
+      "mode": "prev",
+      "k": 5,
+      "wd": 0.001,
+      "dev_wF1": 0.5548064524799549,
+      "dev_macro": 0.4343804962755306,
+      "test_wF1": 0.5615559449375013,
+      "test_macro": 0.41350768737205723
+    },
+    "audio": {
+      "modality": "audio",
+      "mode": "prev",
+      "k": 3,
+      "wd": 0.01,
+      "dev_wF1": 0.3823007735776592,
+      "dev_macro": 0.32982421944355256,
+      "test_wF1": 0.3733404049523462,
+      "test_macro": 0.2911050099689944
+    }
+  },
+  "temperatures": [
+    1,
+    1
+  ],
+  "alpha": 0.5,
+  "split_sizes": {
+    "clf2": 8004,
+    "gate2": 1984
+  }
+}

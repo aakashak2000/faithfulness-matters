@@ -1,0 +1,5 @@
+quantity,estimate,ci_low,ci_high
+"gate gain, tvd effect, resample_full",0.09547892720306494,0.07441311031347497,0.11767180514992813
+"paired gain, confidence minus gate, resample_full",0.0059386973180076685,-0.01795291962968166,0.027417912440899406
+"gate gain with dev-fitted cutoff, resample_full",0.049578544061302576,0.036102385060997534,0.0626663133110265
+"dev-fitted cutoffs (mean, min, max over seeds)",0.364,0.34,0.38

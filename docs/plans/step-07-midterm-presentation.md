@@ -3,7 +3,7 @@ Agreed: 2026-10-15 (decisions given by the user in the session; slide work start
 
 ## What exists
 - No slides yet. A draft outline and Q&A table are in `MIDTERM_STATUS.md` section 11 (local only). Its numbers are stale (old mean/blank results, unsourced cosine and "95%" claims); sections 5.4 and 5.5 and the Q&A rows 5.x/11 were corrected on 2026-10-15, the slide outline in section 11 was not.
-- Format (`docs/RUBRIC.md`): 2 slides, 3 minutes including Q&A, one presenter, slides due 24 h before the slot. Slot unassigned until Oct 16 12:00; treat Oct 17 as the finish line for everything in the "before slides" bucket.
+- Format (`docs/RUBRIC.md`): 2 slides, 3 minutes including Q&A, one presenter, slides due 24 h before the slot. **Slot confirmed 2026-10-20: group 24, Oct 22** (time of day not recorded), so slides are due **Oct 21** at the slot time. The earlier Oct 17 finish line is superseded.
 - Evidence now available for the slides (all in `results/`):
   - Primary result, full-pool resampling: gate gain over always-text +0.019 [-0.003, +0.041]; Spearman 0.705 [0.680, 0.726]; confidence rule +0.225 (`resampling_full_faithfulness.csv`).
   - Dev-fitted cutoff, gate on test: +0.049 [+0.035, +0.062] (`dev_calibration_test.csv`; thresholds in `dev_calibration_thresholds.csv`).
@@ -24,6 +24,7 @@ Independent rubric-grader on the old draft: about 3/5 (Clarity 0.5/1, Novelty 0.
 - **Primary intervention** is full-pool resampling; mean and blank are sensitivity checks (step 1 decision). It was promoted after seeing mean and blank results but before seeing resampling results; this must be disclosed as a protocol change in the Q&A and the report.
 - **Strong audio head** is paused (`step-03-strong-audio-head.md`): before final, optional.
 - **What remains** (slide 2): H2 as a pilot needing about 10 random pairings (the two pilot pairings disagreed in direction, `conflict_h2_diff.csv`); the report with the sensitivity checks; strong audio head only if time allows. The gradient signal is dropped from the slide.
+- **Headline numbers use the 3 pre-registered seeds** (decided 2026-10-20); the 10-seed rerun (`scripts/21_more_seeds.py`) is a Q&A sentence and a report sensitivity check, not the headline (its gate-gain lower bound is -0.0004, awkward on a slide).
 - Roles (presenter, Hessel & Lee owner) are still open.
 
 ## Actions
@@ -45,6 +46,7 @@ Independent rubric-grader on the old draft: about 3/5 (Clarity 0.5/1, Novelty 0.
 | Isn't the confidence rule's high agreement circular? | Partly, yes: with every head trained on shuffled labels its gain is still +0.225, identical to real labels (`shuffled_control.csv`), so we do not count it as evidence of a good explanation. |
 | Does the gate beat "always text"? | At the 0.5 cutoff no (+0.019 [-0.003, +0.041]); with a cutoff fitted on dev it does on test (+0.049 [0.035, 0.062], conditional on that cutoff). |
 | Does that depend on how you measure the effect? | Yes: the gate's gain is +0.019 with the pre-registered effect (change in the predicted class's probability), +0.09 with the change in the whole distribution and +0.06 with label flips (`alt_effect_metrics.csv`); we report the pre-registered one as primary and the others as sensitivity checks. |
+| Is this seed luck? | No: a rerun with 10 trained models gives the same conclusions (gate gain +0.020, per-seed range +0.010 to +0.036, `more_seeds_faithfulness.csv`); the headline keeps the 3 pre-registered models. |
 | Why did the primary intervention change? | Blank stand-ins sit far from real data (cosine similarity 0.30 vs 0.68 for the mean, `embedding_distances.json`), so we promoted full-pool resampling, which uses real embeddings, after seeing the mean and blank results and before seeing its own; mean and blank stay as sensitivity checks. |
 | Is the blank result (-0.032) a finding? | No: we treat it as an artifact of the stand-in being unlike real data (three methods, blank is the outlier). |
 | Does "zero" mean no effect or too little data? | The interval rules out gains above about +0.04 at the 0.5 cutoff (upper bound 0.041). |

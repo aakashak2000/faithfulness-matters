@@ -1,0 +1,33 @@
+model,signal,coverage,kept_share,accuracy_kept,majority_share_all
+"M0b headline recipe, v2 split",plain weight,1.0,1.0,0.8168199233716475,0.7673180076628352
+"M0b headline recipe, v2 split",plain weight,0.8,0.8,0.8741379310344828,0.7673180076628352
+"M0b headline recipe, v2 split",plain weight,0.6,0.6,0.9251596424010217,0.7673180076628352
+"M0b headline recipe, v2 split",plain weight,0.4,0.4,0.9699233716475095,0.7673180076628352
+"M0b headline recipe, v2 split",corrected signal,1.0,1.0,0.9334482758620689,0.7673180076628352
+"M0b headline recipe, v2 split",corrected signal,0.8,0.8,0.9874521072796935,0.7673180076628352
+"M0b headline recipe, v2 split",corrected signal,0.6,0.6,0.9954661558109834,0.7673180076628352
+"M0b headline recipe, v2 split",corrected signal,0.4,0.4,0.9992337164750957,0.7673180076628352
+M1 stronger audio,plain weight,1.0,1.0,0.7600383141762452,0.5423754789272031
+M1 stronger audio,plain weight,0.8,0.8,0.812308429118774,0.5423754789272031
+M1 stronger audio,plain weight,0.6,0.6,0.879757343550447,0.5423754789272031
+M1 stronger audio,plain weight,0.4,0.4,0.9306513409961685,0.5423754789272031
+M1 stronger audio,corrected signal,1.0,1.0,0.938544061302682,0.5423754789272031
+M1 stronger audio,corrected signal,0.8,0.8,0.9875478927203065,0.5423754789272031
+M1 stronger audio,corrected signal,0.6,0.6,0.996743295019157,0.5423754789272031
+M1 stronger audio,corrected signal,0.4,0.4,0.9992337164750957,0.5423754789272031
+M2 stronger text,plain weight,1.0,1.0,0.9709961685823755,0.9708812260536398
+M2 stronger text,plain weight,0.8,0.8,0.9826628352490422,0.9708812260536398
+M2 stronger text,plain weight,0.6,0.6,0.9865900383141762,0.9708812260536398
+M2 stronger text,plain weight,0.4,0.4,0.9881226053639847,0.9708812260536398
+M2 stronger text,corrected signal,1.0,1.0,0.9865900383141762,0.9708812260536398
+M2 stronger text,corrected signal,0.8,0.8,0.999808429118774,0.9708812260536398
+M2 stronger text,corrected signal,0.6,0.6,0.9999361430395913,0.9708812260536398
+M2 stronger text,corrected signal,0.4,0.4,1.0,0.9708812260536398
+M3 stronger text + audio,plain weight,1.0,1.0,0.929080459770115,0.9279693486590038
+M3 stronger text + audio,plain weight,0.8,0.8,0.9545019157088123,0.9279693486590038
+M3 stronger text + audio,plain weight,0.6,0.6,0.9657088122605364,0.9279693486590038
+M3 stronger text + audio,plain weight,0.4,0.4,0.9874521072796935,0.9279693486590038
+M3 stronger text + audio,corrected signal,1.0,1.0,0.9738314176245211,0.9279693486590038
+M3 stronger text + audio,corrected signal,0.8,0.8,0.9979406130268199,0.9279693486590038
+M3 stronger text + audio,corrected signal,0.6,0.6,0.9991060025542784,0.9279693486590038
+M3 stronger text + audio,corrected signal,0.4,0.4,1.0,0.9279693486590038

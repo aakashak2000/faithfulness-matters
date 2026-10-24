@@ -1,0 +1,41 @@
+variant,pair,metric,estimate,ci_low,ci_high
+strong_audio_real_labels,Learned gate ← gate weight,agreement,0.9296296296296296,0.9211475836541507,0.9377171762639182
+strong_audio_real_labels,Learned gate ← gate weight,p_text_mattered_more,0.3642401021711366,0.3429666358745857,0.3860764951840254
+strong_audio_real_labels,Learned gate ← gate weight,gain_over_always_text,0.565389527458493,0.5423462517252676,0.5880733510307218
+strong_audio_real_labels,Learned gate ← gate weight,gain_over_majority,0.29386973180076614,0.27164592787428576,0.3170132715162141
+strong_audio_real_labels,Learned gate ← gate weight,spearman,0.7685985622412419,0.7487728144412585,0.7864879954103308
+strong_audio_real_labels,Confidence fusion ← confidence,agreement,0.9145593869731802,0.9035051759834369,0.9251454436279187
+strong_audio_real_labels,Confidence fusion ← confidence,p_text_mattered_more,0.27662835249042145,0.26025059739971057,0.2933841375807871
+strong_audio_real_labels,Confidence fusion ← confidence,gain_over_always_text,0.6379310344827587,0.6165793211142484,0.6581168214567936
+strong_audio_real_labels,Confidence fusion ← confidence,gain_over_majority,0.19118773946360157,0.17261641580757922,0.2105344757241942
+strong_audio_real_labels,Confidence fusion ← confidence,spearman,0.8835742700645671,0.873442018341138,0.8927716483179754
+strong_audio_real_labels,Learned gate ← confidence,agreement,0.6491698595146871,0.6308920027039366,0.666546562691724
+strong_audio_real_labels,Learned gate ← confidence,p_text_mattered_more,0.3642401021711366,0.3429666358745857,0.3860764951840254
+strong_audio_real_labels,Learned gate ← confidence,gain_over_always_text,0.28492975734355047,0.25171478406036785,0.3161351135936633
+strong_audio_real_labels,Learned gate ← confidence,gain_over_majority,0.013409961685823646,-0.007375425631993007,0.0360195968252458
+strong_audio_real_labels,Learned gate ← confidence,spearman,0.47156035619665687,0.43862951797818955,0.5031679364045105
+strong_audio_real_labels,Average fusion ← confidence,agreement,0.8872286079182631,0.8756361628835667,0.8986521583725217
+strong_audio_real_labels,Average fusion ← confidence,p_text_mattered_more,0.31826309067688374,0.3012853685190957,0.3352843346000969
+strong_audio_real_labels,Average fusion ← confidence,gain_over_always_text,0.5689655172413793,0.5467345432587554,0.5907229767414413
+strong_audio_real_labels,Average fusion ← confidence,gain_over_majority,0.20549169859514682,0.18788614958415356,0.22249277162980455
+strong_audio_real_labels,Average fusion ← confidence,spearman,0.8548753908894012,0.8430658909759635,0.8674106152620019
+strong_audio_shuffled_labels,Learned gate ← gate weight,agreement,0.4057471264367816,0.3905150831828213,0.42085651590412404
+strong_audio_shuffled_labels,Learned gate ← gate weight,p_text_mattered_more,0.03065134099616858,0.026298121910283415,0.034999013776798454
+strong_audio_shuffled_labels,Learned gate ← gate weight,gain_over_always_text,0.37509578544061306,0.3582179123645979,0.391646078725471
+strong_audio_shuffled_labels,Learned gate ← gate weight,gain_over_majority,-0.5636015325670498,-0.5788146217922543,-0.5482528738840583
+strong_audio_shuffled_labels,Learned gate ← gate weight,spearman,0.6799497195582446,0.6598578070343423,0.697885725379581
+strong_audio_shuffled_labels,Confidence fusion ← confidence,agreement,0.9964240102171136,0.995018774240858,0.9977487764139249
+strong_audio_shuffled_labels,Confidence fusion ← confidence,p_text_mattered_more,0.0035759897828863342,0.0022512235860752514,0.00498122575914195
+strong_audio_shuffled_labels,Confidence fusion ← confidence,gain_over_always_text,0.9928480204342273,0.9900375484817161,0.9954975528278497
+strong_audio_shuffled_labels,Confidence fusion ← confidence,gain_over_majority,-1.1102230246251565e-16,-1.1102230246251565e-16,1.1102230246251565e-16
+strong_audio_shuffled_labels,Confidence fusion ← confidence,spearman,0.9151570875028,0.9095338094115986,0.9199408505508693
+strong_audio_shuffled_labels,Learned gate ← confidence,agreement,0.9693486590038315,0.9650009862232015,0.9737018780897165
+strong_audio_shuffled_labels,Learned gate ← confidence,p_text_mattered_more,0.03065134099616858,0.026298121910283415,0.034999013776798454
+strong_audio_shuffled_labels,Learned gate ← confidence,gain_over_always_text,0.9386973180076629,0.9300019724464031,0.9474037561794332
+strong_audio_shuffled_labels,Learned gate ← confidence,gain_over_majority,1.1102230246251565e-16,-1.1102230246251565e-16,1.1102230246251565e-16
+strong_audio_shuffled_labels,Learned gate ← confidence,spearman,0.2926532158186652,0.2538328635243237,0.32667017860868125
+strong_audio_shuffled_labels,Average fusion ← confidence,agreement,0.9959131545338442,0.994454628753421,0.9973627192565587
+strong_audio_shuffled_labels,Average fusion ← confidence,p_text_mattered_more,0.004086845466155811,0.0026372807434412557,0.0055453712465789295
+strong_audio_shuffled_labels,Average fusion ← confidence,gain_over_always_text,0.9918263090676884,0.9889092575068421,0.9947254385131175
+strong_audio_shuffled_labels,Average fusion ← confidence,gain_over_majority,0.0,-1.1102230246251565e-16,1.1102230246251565e-16
+strong_audio_shuffled_labels,Average fusion ← confidence,spearman,0.899910478716102,0.8937152561566626,0.9053656157857228
