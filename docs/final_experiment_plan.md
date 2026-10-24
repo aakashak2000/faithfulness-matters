@@ -1,55 +1,49 @@
-# Final-experiment plan and timeline (draft 2026-10-23; dates are internal, confirm LMS due dates)
+# Final-experiment plan and timeline (revised 2026-10-23; dates are internal, confirm LMS due dates)
+Priorities were reordered after the audit. Classification-F1 improvements are optional and only done if a specific research question needs a stronger model.
 
 ## 0. Provenance of hypotheses (to disclose in the reports)
 | Item | Origin | Status |
 |---|---|---|
-| Proposal hypothesis: agreement between modality-importance signals and intervention effects drops when text and audio carry conflicting emotional evidence (`docs/proposal.pdf`) | prospective, written before any result | untested; keep unchanged as H2 |
-| Observation that the gate weight beats a constant rule on the balanced model (M1) but not on text-dominant models | exploratory, seen on test outputs | preliminary; becomes H1 below |
-| Corrected score (weight x distinctiveness) and its Spearman values | derived AFTER seeing test results; algebra of the swap | diagnostic only (H3) |
-| Original proposal also promised: macro- and weighted-F1 baselines, silence and mean-embedding interventions, confidence-based signals next to the gate, optional gradient/SHAP signals, Spearman agreement | prospective | status in the milestone table below |
+| H2: agreement between importance signals and intervention effects drops when text and audio conflict (`docs/proposal.pdf`) | prospective | protocol frozen in `docs/conflict_experiment_protocol.md`; no model run on a constructed pair yet |
+| H1: the gate's gain over a constant rule falls as one modality dominates | exploratory (seen on test outputs) | needs the controlled series below |
+| H3: gate adaptation changes the winner on a measurable share of utterances | exploratory, now measured: 4.2 to 8.0% of utterances, `results/gate_adaptation_*.csv` | reported; causal role in the weight's failure on the text-heavy model NOT supported (frozen gain is only +1.0 to +1.3, `docs/gate_adaptation_analysis.md`) |
+| H4: a gate that sees the representation that drives the text head tracks swap effects better | new, from the audit | untested; descriptive diagnostic only |
+| The corrected score (weight x distinctiveness) | derived after seeing test results | diagnostic; algebra of the swap |
 
-## 1. Pre-specified hypotheses (frozen before the runs below)
-- **H1 (dominance).** With architecture, split, donor pool, gate form and context held fixed, the gate's gain over the dev-selected constant rule decreases as one modality's swap-win share rises. Primary comparison: gain at lowest vs highest dominance level within the controlled family. Cross-model trends from the uncontrolled M-series are not evidence for H1.
-- **H2 (conflict).** Agreement and gain over the dev-selected constant are lower on verified text-audio conflict pairs than on matched same-emotion controls. Null and opposite outcomes are possible and will be reported.
-- **H3 (gate adaptation).** After accounting for the exact fixed-gate arithmetic, gate re-weighting changes the winner on a measurable share of utterances (observed so far: 6.1% for M1, 4.2% for M5) concentrated in near-ties. The fixed-gate identity is a theorem of the architecture, not a hypothesis.
-- **H4 (gate input mismatch; new from the audit).** In models whose text head reads RoBERTa, a gate that also sees the RoBERTa-based representation tracks swap effects better than the current MiniLM-input gate.
+## 1. Priority order of experiments
+| # | Experiment | Why | Controls | Primary outcome | Cost | Stop / fallback |
+|---|---|---|---|---|---|---|
+| 1 | **Conflict versus matched controls (H2)**, Stage A then Stage B | the proposal's central hypothesis, still untested | natural / matched same-emotion / conflict conditions per text item; human-verified pairs; clf-pool donors; M1 and M3 | paired difference in weight agreement, Holm over 2 models | human annotation about 2 h per reviewer per 100 pairs; model runs minutes | Stage A precision below 50% or kappa below 0.40: amend construction; fewer than 100 verified items: report underpowered |
+| 2 | **Controlled gate-input ablation (H4)** on M2 and M3 | tests the MiniLM-vs-RoBERTa mismatch separately from dominance (heads fixed, so text strength and swap-win share barely change) | same heads, split, donors, alpha; gate variants: current MiniLM input, RoBERTa-PCA input, both; 10 gates each | agreement and gain over dev constant per gate variant, paired by dialogue | about 2 h per model | if no change, the mismatch is not the cause |
+| 3 | **Controlled modality-strength series (H1)** | the uncontrolled M-series cannot support a dominance claim | one architecture (M1), degrade the TEXT head (and separately the audio head) in a pre-listed series (training-set fraction 100, 50, 25, 10 percent; label noise 0, 10, 20 percent), 3 to 5 head seeds per level | gain vs swap-win share, CI over head seeds | 1 to 2 days | abort a level if weighted F1 collapses below 0.30 |
+| 4 | **Gate-adaptation decomposition, extended** | mechanism for the 2 to 4 point drop and the 4 to 8% reversals | existing arrays (done at the summary level, `docs/gate_adaptation_analysis.md`); extend by per-donor decomposition and by the gate-input ablation | share of the frozen-to-adaptive gap explained by the gate term, per condition | hours | none |
+| 5 | **More head seeds and uncertainty** | the "10 seeds" are 10 gates on one head | retrain heads with seeds 0 to 4 (M1, M2, M3), new gates | variance of gain across heads vs across gates | 3 to 4 h | replaces the "10 seeds" wording |
+| 6 | **Alternative intervention robustness** | the swap donor distribution is a design choice | blank/mean replacement, matched-donor swaps (same speaker or same emotion), mean-of-abs, flips, on M1 to M5 | sign and size of the gain under each | about 1 day | report all, including contradictions |
+| opt | audio-dominant series; second dataset (IEMOCAP, license permitting); equal-footing attribution baselines (occlusion, gradient); F1 improvements | publication stretch | | | days to weeks | only after 1 to 6 are stable |
 
-## 2. Experiments, priority order
-| P | Experiment | Controls | Primary outcome | Cost | Acceptance / fallback |
+## 2. Milestone reconciliation (proposal vs actual, as of 2026-10-23)
+| Original commitment | Done? | Evidence | Deviation and why | Remaining | Target |
 |---|---|---|---|---|---|
-| P0 | Corrected-rule swap, M1 then M5 (protocol `docs/corrected_rule_swap_protocol.md`) | rule is the only change | gain over dev constant with CI, paired with raw rule | M1 about 1 h CPU, M5 about 1 h | validations pass; report whichever result |
-| P0 | Cheap checks (F1 recompute, dev constant, duplicate sensitivity), step 42 | none | all conclusions unchanged or listed as changed | done or running | `results/audit_*.csv` |
-| P1 | **Gate-input mismatch test (H4)**: for M2 and M3, train gates on [RoBERTa mean-pooled representation reduced by PCA to 384-d fitted on clf only] + audio, keep heads, donors, split, alpha fixed; also a gate that sees only MiniLM (current). Same swap protocol. | heads unchanged, so text strength and its swap-win share barely move; the only change is what the gate sees | agreement and gain over dev constant, per input variant | about 2 h per model | If no change, mismatch is not the cause of the lost edge. Run on M2 and M3 only; M5 needs a stage-2 equivalent and is deferred |
-| P1 | **Dominance series (H1)**: fix M1's architecture and degrade the TEXT head (and separately the audio head) in a pre-listed series (e.g. training-set fraction 100, 50, 25, 10 percent, or label noise 0, 10, 20 percent), several head seeds each; swap and constant baselines per level | one backbone, one gate form, one donor pool | gain vs swap-win share across levels, CI over head seeds | 1 to 2 days | needs at least 3 head seeds per level (uncertainty currently ignores head variation); abort if F1 collapses |
-| P1 | **Conflict study (H2)**: candidate pairs from MELD labels (text of utterance i with audio of an utterance of a different emotion), compared with (a) same-emotion donors, (b) random donors, (c) matched donors where possible; human audit of 50 to 100 pairs for audible emotion; protocol frozen on dev | MELD label mismatch does not guarantee audible conflict, so audit sample is mandatory | agreement, gain over dev constant, decision margin; no accuracy on synthetic pairs | 3 to 4 days incl. human audit | report null results; record attrition |
-| P1 | Context vs strength: compare M3 (no context) and M5 (context) at matched alpha settings and matched gate counts; M5 swap with neighbours fixed vs variants | uses existing models | whether context changes swap-win share or gain | hours | Without a matched context-free control, do not claim a context effect (see section 4) |
-| P2 | Audio-dominant series, second dataset (IEMOCAP), second fusion mechanism, equal-footing attribution baselines (occlusion, gradient) | | | days to weeks | only if P1 is stable; never claim SHAP or IG without implementing them |
-| P2 | Head-seed variance for M1, M2, M3 (retrain heads with seeds 0 to 4, new gates) | | variance of gain across heads vs across gates | 3 to 4 h | replaces "10 independent seeds" wording |
+| Unimodal and fused baselines, macro and weighted F1 | yes | `results/audit_f1_recompute.csv`, `harness_models.csv` | dialogue-level re-split of training data; correction fitted on dev | none | midterm |
+| Effects of removing text or audio | yes, changed | `interventions_log.csv`, swap results | primary intervention became real-utterance swaps; silence and mean replacement kept as checks on the earlier model | experiment 6 | Nov 24 |
+| Gate weight vs confidence signals | partly | `harness_models.csv` | confidence rule's agreement is partly structural | none | midterm |
+| Gradient or SHAP (optional) | no | | | optional | if time |
+| Spearman and ranking agreement | yes | `audit_bootstrap.csv`, `corrected_rule_swap_*.csv` | | | midterm |
+| Silence vs mean comparison and instability report | earlier model only | `docs/robustness_results.md` | | experiment 6 | Nov 24 |
+| Conflict test | pilot on the earlier model only | `conflict_h2_*.csv` | now a frozen protocol with human verification | experiment 1 | Nov 10 (Stage A done by team), Nov 17 (Stage B results) |
+| Full comparison across signals incl. conflict | not yet | | | all above | Dec |
 
-## 3. Milestone reconciliation (proposal vs actual, as of 2026-10-23)
-| Original commitment | Done by Oct 22? | Evidence | Deviation and why | Remaining | New target |
-|---|---|---|---|---|---|
-| Unimodal and fused baselines reproduced on official MELD splits, macro and weighted F1 | Yes, with caveats | `results/baselines_*.csv` (earlier pipeline), `results/harness_models.csv`, `results/audit_f1_recompute.csv` (step 42) | later models use a dialogue-level re-split of the training data and a dev-fitted prior correction; both weighted and macro F1 are in the CSVs | report both with and without correction; keep the official dev/test | midterm report |
-| Tests of removing text or audio and the effect on predictions | Yes, extended | silence and mean replacement on the original headline model (`results/interventions_log.csv`, `robustness_results.md`); swap test on later models | primary intervention changed from silence/mean to swapping real utterances (silence and mean kept as checks on the headline model only); the change was made after seeing that removal creates unrealistic inputs | blank/mean checks for M1 to M5 | Nov 2 |
-| Compare gate weight with confidence-based signals | Partly | `results/harness_models.csv` (`confW_*`, `gateCONF_*`) | confidence rule analysed; its agreement is partly structural | none beyond reporting the caveat | midterm |
-| Gradient/SHAP importance (optional) | No | | optional in the proposal; not started | P2 | final, if time |
-| Spearman plus ranking agreement | Yes | `results/harness_models.csv`, `results/audit_bootstrap.csv` | none | corrected-rule version | midterm follow-up |
-| Silence vs mean-embedding comparison and reporting any instability | Yes on the original model | `results/robustness_results.md` | not repeated on M1 to M5 | P1 robustness | Nov 24 |
-| Conflict test with labelled mismatched pairs (H2) | Pilot only (earlier headline model, `results/conflict_h2_*.csv`) | | no controlled or audited conflict set yet | P1 above | Nov 10 protocol freeze, Nov 17 results |
-| Final: full comparison across importance signals incl. conflict | not yet | | | all of section 2 | Dec |
+## 3. Reading of M2, M3 and M5 so far (no new experiment)
+- Text swap-win share: M2 97.1%, M3 92.8%, M5 95.2%; gain over the majority winner: -0.4, -0.1, -1.6 points. Gate weighted F1 at alpha 0 / dev alpha: M2 59.69 / 63.48, M3 60.87 / 62.70, M5 57.09 / 63.57.
+- M5 differs from M3 in context, stage-2 refit and gate count (3 vs 10) at once, so its lower gain cannot be attributed to context. Required control: a context-free model with the same stage structure and 3 gates. Context is not shown to help F1.
 
-## 4. Reading of M2, M3 and M5 so far (no new experiment)
-- Swap-win share of text: M2 97.1% (strong text, no context), M3 92.8% (strong text and audio, no context), M5 95.2% (adds neighbouring utterances). Gains over the test-majority constant: M2 -0.4, M3 -0.1, M5 -1.6 points.
-- Weighted F1 (gate): M2 59.69 / 63.48, M3 60.87 / 62.70, M5 57.09 / 63.57 (alpha 0 / dev alpha). So at alpha 0 the context model is the LOWEST of the three, and with the correction it is within 0.1 points of M2. These data do not show that context improves F1, and they do not separate context from the prior correction.
-- M5 differs from M3 in three ways at once (context, a stage-2 refit, gate count 3 vs 10), so its lower gain cannot be attributed to context. Required control: a context-free model with 3 gates and the same stage structure.
-
-## 5. Calendar
+## 4. Calendar
 | Window | Work | Exit gate |
 |---|---|---|
-| Oct 23 to 27 | cheap checks, corrected-rule M1 and M5, architecture/result registries, related-work reading in full | every slide number tagged VERIFIED / NOT VERIFIED; contradictions investigated |
-| Oct 28 to Nov 2 | midterm report (4 pages, 10 pt) and visual inspection; head-seed variance | no unsupported number; milestone table complete |
-| Nov 3 to 10 | gate-input test (H4) set-up; conflict-pair construction, human audit, protocol freeze | frozen protocols, counts before outcomes |
-| Nov 11 to 17 | conflict study and dominance series, replicates | H1 and H2 results with uncertainty, nulls kept |
-| Nov 18 to 24 | decomposition per donor, robustness across effect definitions, per-emotion and error audit | paper-ready tables |
-| Nov 25 to Dec 1 | audio-heavy or second dataset only if the above is stable; otherwise fix weaknesses | final experiment freeze, one reproduce command |
-| Dec 2 onward | 5-slide deck, rehearsals at about 118 words per minute (630 to 660 words for 6 minutes), Q&A sheet, 8-page final report with appendix | traceable numbers, deadlines met |
+| Oct 23 to 27 | commit all of the above; read the four key papers beyond what is recorded; hand the Stage A package to three reviewers | reviewers have the package and instructions |
+| Oct 28 to Nov 2 | midterm report submission (4 pages, 10 pt, rendered and inspected); Stage A annotation and adjudication; head-seed runs (experiment 5) | kappa and precision per protocol section 10; decision to proceed or amend |
+| Nov 3 to 10 | Stage B pair construction with the frozen rule; gate-input ablation (experiment 2) | frozen Stage B list and hash before annotation |
+| Nov 11 to 17 | Stage B annotation and adjudication; run conflict analysis; start experiment 3 | H2 result with uncertainty, whatever it is |
+| Nov 18 to 24 | experiments 3, 4 (extended) and 6 | tables for the report |
+| Nov 25 to Dec 1 | replication or fixes only; final freeze and one reproduce command | all numbers traceable |
+| Dec 2 onward | 5-slide deck (630 to 660 words at about 118 wpm), Q&A sheet, 8-page report with appendix | deadlines met |
