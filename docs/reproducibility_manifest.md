@@ -126,3 +126,18 @@ Base commit before this audit: `24a2ae379abc9a9dbb81b329c86f7ec3adcc867b`. Files
 | data/audit_cache/gates_M5.pt | 2.2 | f7bedcdc5ec5a3c9 |
 
 Checkpoints under `checkpoints/` (seed*.pt headline gates and heads) were not hashed in this pass (UNVERIFIED). The M0b to M3 heads are retrained deterministically from the saved features on each run, so they have no stored checkpoint; their reproduction is shown by the F1 match in `results/audit_f1_recompute.csv`.
+
+## Added after the corrected-rule runs (2026-10-23)
+| File | sha256[:16] |
+|---|---|
+| results/corrected_rule_swap_M1.csv | 88a6d5164ac5a93d |
+| results/corrected_rule_swap_M5.csv | db8222c0f6e109d0 |
+| results/audited_master_results.csv | 2544ca18d83f7f1e |
+| scripts/43_corrected_rule_swap.py | 1b1e94a226e58175 |
+| scripts/audit_common.py | 10560f09f69f67b8 |
+| scripts/42_audit_cheap_checks.py | 488c68d618c37f09 |
+| docs/corrected_rule_swap_protocol.md | 076add8ada6d6a46 |
+| data/corrected_rule_arrays_M1.npz (local) | d08707f87216e293 |
+| data/corrected_rule_arrays_M5.npz (local) | f0462bde31c37b05 |
+
+Protocol commit: `4f4c662` (before the corrected-rule test runs). Logs (local): `logs/43_corrected_rule_M1.log`, `logs/43_corrected_rule_M5.log`.

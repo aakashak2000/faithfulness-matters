@@ -87,3 +87,32 @@ Supersedes rows A6 and A8 above. Commands and hashes: `docs/reproducibility_mani
 | 10 | Model architectures M0b to M5 | **PASS with UNVERIFIED cells**: see `docs/model_architecture_registry.md`. Encoders are used as frozen feature extractors; the gate reads MiniLM + 1,024-d audio embeddings in all models | registry |
 | 11 | Commit hashes for results | **FAIL until committed**: all step 21 to 43 sources and results are untracked at audit time; the audit commit (below) fixes this going forward | `git log` |
 | 12 | Context improves F1 | **FAIL (not supported)**: gate weighted-F1 at alpha 0 / dev alpha: M3 (no context) 60.87 / 62.70, M5 (context) 57.09 / 63.57, M2 59.69 / 63.48. Context is lower at alpha 0 and within 0.1 point of M2 with the correction; M5 also differs in gate count (3 vs 10) and stage structure | `results/audit_f1_recompute.csv` |
+
+---
+# Update 3 (2026-10-23): corrected-rule swap results (protocol `docs/corrected_rule_swap_protocol.md`, commit 4f4c662 predates every number below)
+Validations passed before interpretation (step 43 log `logs/43_corrected_rule_M1.log`, `..._M5.log`): 7 synthetic tests; raw-rule effects reproduce the step 38/39 arrays (max abs diff 1.8e-7 for M1, 2.4e-7 for M5); the classes tracked reproduce the step 42 F1 exactly (M1 0.5566 / 0.5880, M5 0.5709 / 0.6357). Outputs: `results/corrected_rule_swap_M1.csv`, `results/corrected_rule_swap_M5.csv`. No parameter was changed after seeing a result.
+
+## Primary result (effect = |mean over donors of q_d[c'] - q0[c']|, gate recomputed, dialogue bootstrap, gain over the dev-selected constant = always text)
+| Model | Rule | text won | weight agreement [95% CI] | gain over dev constant [95% CI] | Spearman [95% CI] |
+|---|---|---|---|---|---|
+| M1 | raw (original) | 54.2% | 75.4% [73.9, 76.9] | +21.1 [18.8, 23.6] | 0.721 [0.703, 0.739] |
+| M1 | corrected | 52.8% | 73.6% [71.9, 75.3] | **+20.8 [18.5, 23.2]** | 0.703 [0.681, 0.723] |
+| M5 | raw (original) | 95.2% | 93.6% [92.6, 94.5] | -1.6 [-2.6, -0.6] | 0.433 [0.398, 0.468] |
+| M5 | corrected | 92.9% | 91.9% [90.9, 93.0] | **-0.9 [-1.9, -0.0]** | 0.415 [0.378, 0.450] |
+Paired differences, corrected minus raw (same bootstrap draws): M1 agreement -1.8 [-2.8, -0.8], gain -0.3 [-1.7, +1.0]; M5 agreement -1.6 [-2.5, -0.8], gain +0.7 [-0.2, +1.5].
+
+## Reading, by the rule fixed in protocol section 9
+- **M1:** the corrected-rule gain interval excludes 0 and is positive, so "the weight is informative against a constant baseline when text and audio are balanced" is supported under the corrected rule as well. The paired gain difference is small and its interval includes 0. The agreement is lower by 1.8 points (interval excludes 0).
+- **M5:** the corrected-rule gain is negative with an upper bound at 0 (-0.0001); the original conclusion "no better than always guessing text" stands, with the weaker wording "not better, and slightly worse or equal". Under mean-of-absolute-changes the corrected gain is -3.3 [-4.4, -2.3] and the flip-share effect gives -2.4 [-3.4, -1.4], so the sign is stable across effect definitions.
+- **No contradiction** of the preliminary findings; magnitude changes are small, but the quoted F1 and the tested rule are now aligned.
+
+## Things the corrected rule changes or exposes
+1. The prior correction changes the predicted class for 19.3% (M1) and 30.7% (M5) of test utterances. On those rows agreement falls from 71.6% to 62.2% (M1) and from 90.6% to 83.7% (M5); on unchanged rows it is unchanged (76.3 / 76.3 and 94.9 / 95.6). The loss of agreement sits in the rows where the correction moves the decision.
+2. Under the **frozen gate** (weight held at w0) the corrected-rule agreement is 75.2% (M1) and 93.0% (M5), gains over the majority +23.0 and +1.3, against +21.1 / -1.6 for the real recomputed gate (raw rule). The sign of the M5 gain depends on whether the gate may re-weight.
+3. The mean-of-absolute-changes variant gives the corrected rule a higher M1 gain (+29.1 vs +26.7 raw; paired +2.4 [1.5, 3.3]), so effect-definition sensitivity exceeds rule sensitivity for M1.
+4. The dev-selected constant is "text" in every run, so the new baseline equals the old one. The test-majority concern is closed for these models.
+
+# Phase 3 (interpretation; no new runs)
+- **Gate-input mismatch (M2, M3, M5):** the gate reads the MiniLM text embedding and the 1,024-d audio embedding, not the 25,600-d RoBERTa representation that drives the text head (`docs/model_architecture_registry.md`). It cannot see most of what makes the text prediction confident, which could explain why its weight fails to track text-dominated swap effects. This is a hypothesis (H4 in `docs/final_experiment_plan.md`), not a finding. Controlled test proposed there: train gates on a RoBERTa-based input with heads, donors and alpha fixed, on M2 and M3 only, so text strength and swap-win share barely change and the mismatch is separated from dominance.
+- **M2 vs M3 vs M5 (context vs strength):** swap-win share of text 97.1 / 92.8 / 95.2%; gain over the majority constant -0.4 / -0.1 / -1.6; gate weighted-F1 at alpha 0 / dev alpha 59.69 / 63.48, 60.87 / 62.70, 57.09 / 63.57. Context is not shown to help F1 and is not separable from the stage-2 refit and the 3-versus-10 gate count. A context-free model with the same stage structure and 3 gates is the missing control.
+- Not claimed anywhere: that context improves F1, that balanced modalities guarantee faithful weights, that the corrected-signal agreement validates causal importance.
