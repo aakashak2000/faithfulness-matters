@@ -59,7 +59,7 @@ Table 1 lists the tested models; the first swap experiment used the fused probab
 | Conflict test (H2) | pilot only | controlled, audited conflict set is the next step |
 
 ## 7. Next steps (dated; targets, not promises)
-Nov 10: freeze the conflict-pair protocol with matched same-emotion and random controls and a human audit of 50 to 100 pairs. Nov 17: run the conflict study and a controlled dominance series (one architecture, degraded text head, several head seeds). Nov 24: gate-input mismatch test on M2 and M3, per-donor decomposition, effect-definition and replacement robustness on the new models. Dec: final report and presentation.
+The conflict protocol and a 100-pair annotation package (50 text items from the dev split, each with a conflict-candidate and a matched control audio) are written and frozen; no model has been run on a constructed pair. Oct 28 to Nov 2: three reviewers annotate and adjudicate the package; we proceed only if inter-annotator kappa is at least 0.40 and at least half of the conflict-candidate pairs are verified as conflicts. Nov 3 to 17: build, verify and run the test-split conflict study (M1 and M3, paired against same-emotion controls, Holm correction), and a gate-input ablation on M2 and M3. Nov 18 to 24: controlled text-strength series with several head seeds, extended gate-adaptation decomposition, matched-donor and blank/mean robustness on the new models. Dec: final report and presentation.
 
 ## References
 Poria, S., et al. (2019). MELD: A multimodal multi-party dataset for emotion recognition in conversations. ACL.
