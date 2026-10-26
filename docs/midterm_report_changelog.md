@@ -1,0 +1,9 @@
+# Midterm report revision, change log (2026-10-25)
+- Opening rewritten: concrete debugging scenario, plain-language task, one-paragraph finding (+20.8 vs -0.9), research questions aligned with the proposal (RQ1, RQ2 preliminary; RQ3 untested).
+- Corrected-rule results are the primary findings (Table 2 first two rows, Figure 1); uncorrected-probability results are a labelled sensitivity block. New publication-style figure `figures/fig7_gain_corrected_rule.{png,pdf}` (script `scripts/48_figure_corrected_rule.py`, reads only the results CSVs).
+- Related work is now a four-row comparison table (Liu et al., He and Xiao, Hessel and Lee, Jin et al.) plus a plain statement of what we add and do not claim.
+- Method explains the class-prior correction and the swap test in plain English, each with a labelled made-up example; donor pool (8,004 training utterances, all used, mean 8,003 text and 8,004 audio valid donors per test utterance) and bootstrap documented.
+- Models table adds M3 and states why M3 replaces M5 in the conflict experiment; weighted and macro F1 added (macro from the verified F1 recomputation).
+- He and Xiao reference updated to the journal article (Circuits, Systems, and Signal Processing 45(9):7634-7652, 2026, DOI 10.1007/s00034-026-03547-w, checked through Crossref); quotations are from the arXiv v1 text and are marked as such.
+- Audit-status prose, per-file paths and commit lists removed from the narrative; one reproducibility sentence kept. Status table separates "protocol frozen, annotation pending, no results" from completed work.
+- Built from `docs/midterm_report_draft.md` with pandoc to `docs/midterm_report.tex`, compiled with xelatex to `docs/midterm_report.pdf` (4 pages, 10 pt, single spacing, 0.72 in margins); copied to `docs/midterm_report_draft.pdf`.

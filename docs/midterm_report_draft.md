@@ -1,79 +1,110 @@
 ---
-title: "Faithfulness MATTERS: Do Modality Weights in Text+Audio Emotion Models Match What Swapping a Modality Does?"
+title: "When a Model Says \"the Words Mattered Most\": Testing Text--Audio Fusion Weights Against What Swapping an Input Does"
 author: "Team 47: T. Beede, A. Inamdar, J. Nagpal, A. Samandi, R. Sanchez, A. Kumar"
-date: "CSCI 544 midterm report, draft of 2026-10-23"
-geometry: margin=0.8in
+date: "CSCI 544 midterm report"
+geometry: margin=0.72in
 fontsize: 10pt
+header-includes: |
+  ```{=latex}
+  \usepackage{caption}
+  \captionsetup{font=small,skip=3pt}
+  \usepackage{titlesec}
+  \titlespacing*{\section}{0pt}{7pt}{3pt}
+  \titleformat*{\section}{\large\bfseries}
+  \setlength{\parskip}{3pt}
+  \setlength{\parindent}{0pt}
+  \renewcommand{\arraystretch}{1.05}
+  \usepackage{etoolbox}
+  \usepackage{needspace}
+  \AtBeginEnvironment{longtable}{\footnotesize}
+  ```
 ---
 
-**Status of this draft.** Every number is traceable to a file in `results/` (named in brackets) and was recomputed or re-checked in the audit of 2026-10-23 (`docs/research_audit_2026-10-23.md`). Items we have not verified are marked *unverified*. Results are exploratory, on models we built, and scoped to them.
+## 1. Why this matters, and what we found
+A voice assistant reads "Great, thanks." as joy. The developer opens the debugging panel and sees *text weight 0.9, audio weight 0.1*, and concludes that the tone of voice was ignored. Is that conclusion safe? Many text+audio emotion models combine a text prediction and an audio prediction with a learned weight, and papers read that weight as how much each modality mattered. If the weight does not match what the model actually does when an input changes, a developer will look in the wrong place.
 
-## 1. What we are trying to do, and why it matters
-When an AI model reads what someone says and also hears how they say it, it can report that one input mattered more, for example "the model leaned on the words". We ask whether such a report matches what the model actually does when we change one input. **Who cares:** anyone auditing an emotion model for an assistant, a robot or content moderation: if a developer debugging a wrong prediction is told "the audio was ignored" and that is untrue of the model's behaviour, they will look in the wrong place.
+**Task.** Emotion recognition on MELD (Poria et al. 2019), dialogue from the TV show *Friends*: one utterance, its transcript and its audio clip, goes in; one of seven emotions (anger, disgust, fear, joy, neutral, sadness, surprise) comes out. We use the official split (9,989 / 1,109 / 2,610 utterances) and report weighted and macro F1. **The quantity under test** is a per-utterance weight *w* in (0, 1) that mixes the two predictions, p = *w*·p~text~ + (1 − *w*)·p~audio~. Reading it as "*w* above 0.5 means text mattered more" is the claim we check. "Influence" here means something measurable: how much the model's output moves when that modality is replaced by another utterance's.
 
-**Task.** Emotion recognition on MELD (Poria et al. 2019), dialogue from the TV show *Friends*: the input is one utterance (its transcript and its audio clip), the output is one of seven emotions (anger, disgust, fear, joy, neutral, sadness, surprise). We use the official train/dev/test split (9,989 / 1,109 / 2,610 utterances) and report weighted and macro F1. **The quantity under test** is a per-utterance *modality weight* w between 0 and 1, produced by a learned gate or a confidence rule, that mixes a text prediction and an audio prediction into the final one: p = w p_text + (1 - w) p_audio. Papers often read w above 0.5 as "text mattered more". **"Influence" in this report is operational:** how much the model's predicted-class probability moves when that modality is replaced by that of other real utterances. We do not claim to identify the true cause of a prediction.
+**What we found.** In a balanced model, the weight's call agrees with which modality's replacement moves the prediction more far beyond the best trivial guess, **+20.8 points** over always answering "text". In a text-dominated model it adds nothing, **−0.9 points** (interval touching zero). Both models were built by us on MELD. We explain why a weight can mislead (it ignores how unusual each modality's prediction is) and show this follows exactly from the fusion arithmetic. We do not attribute the contrast between the two models to any single cause; that is the subject of the experiments planned in Section 5.
 
-**Research questions.** (RQ1) How often does the weight's call (text or audio) match which modality's replacement moves the prediction more, compared with a trivial rule that always names the usually-winning modality? (RQ2) How does the answer change as one modality dominates? (RQ3, from our proposal) Does agreement fall when text and audio carry conflicting emotional evidence?
+**Research questions.** RQ1: how often does the weight's call match the swap-test winner, compared with an always-text rule? RQ2: how does this change as one modality dominates? RQ3 (from our proposal): does agreement fall when text and audio express conflicting emotions? RQ1 and RQ2 are answered preliminarily here; RQ3 is not yet tested.
 
-## 2. Related work and the gap
-*Gates are already read as importance.* Liu, Li and Meng (2020, Sec. 3.6, Fig. 2) fuse speech and text on IEMOCAP with a group gated fusion (GGF) layer, claim it "obtains interpretable contribution weights of each modality", and show that the averaged gate weights of the text representations are higher. He and Xiao (2025 preprint, Sec. 3.4 and 5) use a dual-gated fusion whose multimodal gate "adaptively assigns importance to each modality", supported by an ablation that removes the whole gating module (F1 87.96 to 86.59). Neither tests the gate values against interventions. Both gates act on feature vectors (element-wise or softmax-normalised), unlike our single scalar weight on class probabilities, so our results do not transfer to them.
-*Intervention tools we build on, not invent.* Hessel and Lee (2020) define EMAP, whose building block is the model's output averaged over other examples' values of the other modality (their Algorithm 1 and Eq. 3), to test whether a model uses cross-modal interactions on image+text tasks. Our swap effect is this partial dependence, read at one utterance's predicted class. Jin et al. (2021, Eq. 5) already compute a per-instance modality saliency by masking out a modality and measuring the KL change of a teacher's prediction, and use it to weight distillation losses. Neither compares such effects with a model's own fusion weight.
-*What counts as faithful.* Jain and Wallace (2019), Wiegreffe and Pinter (2019) and Jacovi and Goldberg (2020) motivate defining faithfulness carefully, using trivial baselines and making graded claims.
-*Gap and contribution.* We do not claim to have invented swapping or intervention-based saliency, and our search was targeted, not exhaustive. We add an audit: for utterance-level text+audio emotion models with a scalar late-fusion weight, how often does the weight's call agree with which modality's substitution moves the prediction more, compared with a constant rule, and how does that change when one modality dominates. This covers models we built on MELD, not the published gated architectures.
+## 2. Related work: what is known, and what we add
+| Work | What is gated or intervened on | Tested against interventions? | How our audit differs |
+|:--------------|:------------------------------|:--------|:--------------------------------------|
+| Liu, Li, Meng 2020 | gates on feature vectors; claims "interpretable contribution weights" (Sec. 3.6) | no | one scalar weight on class probabilities, tested utterance by utterance |
+| He, Xiao 2026 (LPGNet) | feature gates and softmax weights over modalities; "adaptively assigns importance to each modality" | no (module ablation only) | same |
+| Hessel, Lee 2020 | EMAP: output averaged over other examples' values of one input (image+text) | no gates studied | same averaging idea, read at one utterance's predicted class and compared with the model's own weight |
+| Jin et al. 2021 | per-instance modality saliency by masking, used to weight distillation losses | no | real-utterance substitution; audits a weight instead of training with scores |
 
-## 3. Method
-**Models (all built by us; encoders frozen, only heads and the gate trained).** Text: MiniLM sentence embedding (384-d) or RoBERTa-large (all 25 layers, 25,600 features); audio: WavLM-large (last layer 1,024-d, or all 25 layers with mean and std, 51,200 features); linear heads on standardised features. The gate is an MLP (Linear 1,408 to 128, ReLU, Linear to 1, sigmoid; 180,481 parameters) on the MiniLM text embedding and the 1,024-d audio embedding **in every model**. *Balanced* (M1): MiniLM text head and all-layer audio head, each utterance judged alone. *Text-heavy* (M5): RoBERTa text, all-layer audio, plus a second stage that uses neighbouring utterances' first-stage outputs within the same dialogue (the audio stage also uses following utterances) [`docs/model_architecture_registry.md`]. A class-prior correction q = softmax(log p + alpha log pi), alpha chosen on dev, is applied to the fused probability for the reported F1 (never tuned on test).
+Gate values are already read as importance (Liu et al.; He and Xiao), and substitution and masking are established tools (Hessel and Lee; Jin et al.). We do not claim to have invented either. **Our contribution is the audit that joins them:** for utterance-level text+audio emotion models with a scalar late-fusion weight, we measure how often the weight identifies the modality whose replacement matters more, against a trivial constant rule, and we show when it stops adding anything. To our knowledge, among the work we read, no paper tests a fusion weight this way. Our gate is simpler than the published feature-level gates, so our results do not transfer to them without separate tests. Jain and Wallace (2019), Wiegreffe and Pinter (2019) and Jacovi and Goldberg (2020) motivate the framing: define faithfulness carefully, use trivial baselines, and make graded claims.
 
-**Swap test (primary).** For an utterance, let c be the emotion with the highest fused probability on the unswapped input. For each valid donor utterance from the classifier-training split (test utterances are never donors; byte-identical embeddings are excluded), replace one modality of the explained utterance with the donor's, recompute the gate and the fused probability, and record the probability of c. Average over donors, subtract the original probability of c, take the absolute value: that is the modality's effect. The modality with the larger effect "mattered more". The **weight's call** is text if w > 0.5. **Agreement** is the share of utterances where call and winner match. **Baselines:** always the modality that wins most often; we select it on dev (it is text for every model) and also report the test-majority rule, which is identical here and descriptive only. **Uncertainty:** dialogue-level bootstrap (1,000 draws), gates averaged inside each draw; this covers test-set sampling only. The 10 gates share one head per model (3 gates for M5), so variation across independently trained heads is *not* measured.
+## 3. Method in plain terms
+**Models** (all built by us; pretrained encoders frozen, only small linear heads and the gate trained). Each head outputs seven emotion probabilities; the gate, a small network (one hidden layer of 128 units, sigmoid output) reading a 384-d text embedding and the audio embedding, outputs *w*. Table 1 lists the three models. M3 is M5 without the context stage; we introduce it because it has M5's encoders and strength but judges each utterance alone, which the conflict experiment needs (Section 5).
 
-**Hypotheses (provenance).** H2 (conflict lowers agreement) is from our proposal and untested. The balanced-versus-text-heavy contrast (H1) and the corrected score below were found after seeing test outputs and are labelled exploratory.
+| Model | Text side | Audio side | Context | Gates | W-F1 / M-F1 |
+|:--------------|:--------------------|:----------------|:------------------------|:----|:-------------|
+| M1 balanced | MiniLM embedding, linear head | WavLM-large, all layers | none | 10 | 58.8 / 41.1 |
+| M3 strong, no context | RoBERTa-large, all layers | as M1 | none | 10 | 62.7 / 46.4 |
+| M5 text-heavy | as M3 | as M3 | neighbouring utterances' first-stage outputs (audio stage also uses following ones) | 3 | 63.6 / 46.5 |
 
-## 4. Preliminary results
-All swap results in Table 1 use the decision rule that produces the reported F1: the fused probability with a class-prior correction whose strength alpha was chosen on dev (protocol written and committed before the run, `docs/corrected_rule_swap_protocol.md`, commit 4f4c662). The same measurements on the fused probability without the correction are a sensitivity check (last two rows).
+Table: Models. W-F1 and M-F1 are weighted and macro F1 (%) of the learned-gate model with the dev-fitted class-prior correction described below. The published bcLSTM baseline is 59.25 weighted F1 and DialogueRNN 60.25 (Poria et al. 2019); the comparison is descriptive, not controlled, since our encoders are newer.
 
-| | Weighted F1 (gate, with dev-fitted correction) | Text swap larger | Weight agrees | Gain over always-text [95% CI] |
-|---|---|---|---|---|
-| M1 balanced | 58.8 | 52.8% | 73.6% | **+20.8** [18.5, 23.2] |
-| M5 text-heavy | 63.6 | 92.9% | 91.9% | **-0.9** [-1.9, -0.0] |
-| M1, uncorrected probability (sensitivity) | | 54.2% | 75.4% | +21.1 [18.8, 23.6] |
-| M5, uncorrected probability (sensitivity) | | 95.2% | 93.6% | -1.6 [-2.6, -0.6] |
-*Table 1.* Sources: `audit_f1_recompute.csv`, `corrected_rule_swap_M1.csv`, `corrected_rule_swap_M5.csv`, `audit_bootstrap.csv` (all in `results/`). The published bcLSTM baseline is 59.25 and DialogueRNN 60.25 (Poria et al. 2019; not a controlled comparison, our encoders are newer): M1 is 0.45 below bcLSTM, M5 is 4.3 above.
+**Class-prior correction (plain English).** MELD is dominated by neutral. Our heads are trained with class weights, which pushes predictions toward rare emotions; the correction partly undoes that by multiplying each emotion's fused probability by (its training frequency)^α^ and renormalising, with α chosen on the dev set (never on test; 0.25 for M1, 0.5 for M5). *Illustrative example (made-up numbers):* with three emotions, fused probabilities neutral 0.38, joy 0.42, anger 0.20 and training frequencies 0.47, 0.17, 0.11, α = 0.25 gives scores 0.31, 0.27, 0.12, which renormalise to neutral 0.45, joy 0.39, anger 0.17, so the prediction moves from joy to neutral. All results below that carry an F1 use this corrected rule.
 
-**Finding 1.** On the balanced model the weight agrees with the swap test far more often than guessing the usual winner (+21 points), under both rules. **Finding 2.** On the text-heavy models, text moves the prediction more in about 93 to 95% of utterances and the weight does no better than always guessing text (gain -0.9 on the corrected rule, interval touching 0; -1.6 on the uncorrected probability). When audio did win (4.8% of utterances) the weight said so 53.9% of the time and was right 38.3% of the time it said so. A stronger-text model without context (M2) gives the same picture (text wins 97.1%, gain -0.4 [-0.7, -0.2]). **We do not conclude** that balanced modalities guarantee informative weights: models with a flattened text share of 72% or 42% gained +9.9 and +2.3 points, and weak-text models lost about 12.7 [`results/balance_experiments.csv`].
+**Swap test (plain English).** For one utterance we freeze the emotion the model first predicted. To measure the text's influence, we put in the text of another utterance, rerun the whole model (including the gate), and record the probability of that same emotion. We do this with every utterance in a pool of 8,004 training utterances (all of them, no sampling; on average 8,003 valid text donors and 8,004 audio donors per test utterance, excluding clips whose embedding is identical to the explained utterance's), average the answers, and measure how far the average sits from the original probability. Doing the same for audio gives two numbers; the modality with the larger one "mattered more". *Illustrative example (made-up numbers):* the model says anger with probability 0.68; averaging over text donors gives 0.64 (effect 0.04) and over audio donors 0.50 (effect 0.18). Audio mattered more, even if the weight said 0.8 for text, so the weight and the swap test disagree on this utterance. **Agreement** is the share of test utterances where the weight's call (text if *w* > 0.5) equals the swap winner. **Baseline:** always answering the modality that wins most often, which here is "text" in every model (chosen on dev swaps, so no test outcome selects it). **Gain** is agreement minus that baseline. Intervals are 95% from a bootstrap that resamples whole test dialogues (1,000 draws).
 
-**Diagnostic: why a weight can mislead.** With the gate frozen at its original value, the swap effect of a modality is exactly the weight times the absolute difference between its predicted-class probability and the donors' average probability. A high weight therefore gives little effect if the modality's prediction looks like a typical replacement's. This "corrected score" matches the frozen-gate swap winner in 100% of cases (a theorem of the architecture, to 5e-7), and the real recomputed-gate winner in 93.9% (M1) and 95.8% (M5) on the uncorrected probability; its rank correlation with swap-effect differences is 0.97 against 0.72 for the weight on M1 (uncorrected probability). Because it is the swap's own algebra, **this is an explanation of the gap, not independent validation.** Letting the gate re-weight per donor changes the winner for 6.1% (M1) and 4.2% (M5) of utterances (uncorrected probability; 8.0% and 5.5% on the corrected rule), mostly near-ties, and lowers the gain by 3.9 [2.5, 5.2] (M1) and 2.6 [1.4, 4.0] (M5) points compared with a frozen gate. Under a frozen gate M5's gain is +1.0 instead of -1.6 (uncorrected probability), so adaptation matters to the sign, but even frozen the gain is near zero, so we do not call adaptation the cause of the text-heavy result [`results/frozen_gate_audit.csv`, `results/audit_duplicate_sensitivity.csv`].
+```{=latex}
+\needspace{9\baselineskip}
+```
+## 4. Results
+| Model | Text swap larger | Weight agrees | Gain over always-text [95% CI] |
+|:--------------------|:--:|:--:|:------------------|
+| M1 balanced | 52.8% | 73.6% | **+20.8** [18.5, 23.2] |
+| M5 text-heavy | 92.9% | 91.9% | **−0.9** [−1.9, −0.0] |
+| *Sensitivity: swap on the uncorrected fused probability* | | | |
+| M1 | 54.2% | 75.4% | +21.1 [18.8, 23.6] |
+| M3 (strong, no context) | 92.8% | 92.7% | −0.1 [−0.6, +0.4] |
+| M5 | 95.2% | 93.6% | −1.6 [−2.6, −0.6] |
 
-**Checks.** Excluding the 42 test utterances flagged for duplicate audio (39 within test, 3 shared with train) changes no gain by more than 0.2 points [`results/audit_duplicate_sensitivity.csv`]. Averaging absolute per-donor changes instead gives the same signs for M1, M2, M3, M5; the earlier headline-recipe model's small edge (+1.8 [-0.4, +4.0]) turns to -1.5 under that definition.
+Table: Swap-test results, primary rule (first two rows) and sensitivity check. Intervals: dialogue-bootstrap.
 
-## 5. Threats and limitations
-(1) Two models carry the main claims; one pair, built by us, so no claim about other systems. (2) Heads are shared across gates, so intervals miss head-training variance. (3) The gate in text-strong models does not see the RoBERTa representation that drives their text predictions (an untested mismatch hypothesis). (4) Swapping in random donors creates unnatural input pairs; blank and mean replacements were checked on an earlier model only. (5) The always-text baseline is also near-optimal when text dominates, which limits what any weight can show. (6) The context model's F1 gain over a no-context model (M3) is 0.9 points with the correction and negative without it, and it also differs in gate count, so we make no claim that context helps. (7) Duplicate audio is flagged only when byte-identical.
+![Corrected decision rule, primary measure. (a) How often a call matches the swap-test winner. (b) The weight's gain over always answering "text", with 95% dialogue-bootstrap intervals.](../figures/fig7_gain_corrected_rule.pdf){width=100%}
 
-## 6. Proposal versus actual (as of 2026-10-23)
-| Proposal commitment | Status | Note |
-|---|---|---|
-| Baselines on official splits, macro and weighted F1 | done | later models use a dialogue-level re-split of training data; both F1 reported |
-| Effects of removing text or audio | done, changed | primary intervention became real-utterance swaps; silence and mean replacement kept as checks, run on the earlier model only |
-| Gate weight versus confidence signals | partly | confidence rule analysed; its agreement is partly structural |
-| Gradient or SHAP signals (optional) | not started | |
-| Spearman and ranking agreement | done | |
-| Conflict test (H2) | pilot only | controlled, audited conflict set is the next step |
+**Finding 1: the weight is informative in the balanced model.** It matches the swap winner in 73.6% of utterances, against 52.8% for always-text, and its ranking of how much more text than audio mattered correlates at 0.70 with the measured gap (Spearman, 95% interval 0.68 to 0.72). **Finding 2: it adds nothing in the text-heavy model.** Text wins about 93% of the time and the weight does no better than always answering text (−0.9 points, interval touching zero: no evidence of an advantage, and at most a small disadvantage). When audio did win (4.8% of utterances, uncorrected probability), the weight said so in 53.9% of those cases, and was right in 38.3% of the audio calls it made. M2, a strong-text model without context, shows the same pattern (text wins 97.1%; −0.4 [−0.7, −0.1], uncorrected probability).
 
-## 7. Next steps (dated; targets, not promises)
-The conflict protocol and a 100-pair annotation package (50 text items from the dev split, each with a conflict-candidate and a matched control audio) are written and frozen; no model has been run on a constructed pair. Oct 28 to Nov 2: three reviewers annotate and adjudicate the package; we proceed only if inter-annotator kappa is at least 0.40 and at least half of the conflict-candidate pairs are verified as conflicts. Nov 3 to 17: build, verify and run the test-split conflict study (M1 and M3, paired against same-emotion controls, Holm correction), and a gate-input ablation on M2 and M3. Nov 18 to 24: controlled text-strength series with several head seeds, extended gate-adaptation decomposition, matched-donor and blank/mean robustness on the new models. Dec: final report and presentation.
+**Why a weight can mislead.** Replacing a modality with an average replacement changes the output by roughly *weight × how different its prediction is from the average replacement's prediction*. A high weight therefore means little if the modality's prediction already looks like a typical replacement. With the gate held fixed this identity is exact (it matches the swap winner in 100% of utterances), and the weight times this "distinctiveness" has rank correlation 0.97 with the measured gap, against 0.72 for the weight alone (M1, uncorrected probability). **Because it is the swap's own arithmetic, this explains the gap; it is not independent evidence of importance.** Letting the gate re-weight per replacement changes the winner for 4 to 8% of utterances and lowers the gain by 2 to 4 points relative to a frozen gate, but even with the gate frozen M5's gain is only +1.0 to +1.3, so we do not call re-weighting the cause of the text-heavy result.
+
+**Robustness.** Dropping the 42 test utterances with shared audio changes no gain by more than 0.2 points. Averaging absolute per-replacement changes instead gives the same signs for M1, M2, M3 and M5. The two models differ in encoders, strength, context and the number of trained gates (10 for M1 and M3, 3 for M5), so the contrast between them is a finding to explain, not an established cause.
+
+## 5. Status against the proposal, and what we test next
+**Conflict experiment (RQ3).** The proposal's hypothesis, that agreement falls when text and audio express different emotions, is untested. We have written and frozen the protocol before running any model on a constructed pair, and prepared a 100-pair package that three reviewers will annotate blind to the dataset labels (differing MELD labels do not guarantee that the emotions sound or read as conflicting). We will compare, per text, a verified conflicting pairing with a matched same-emotion control, with weight-versus-swap agreement as the outcome and Holm correction over two models. With about 100 verified items only large effects (roughly 10 to 20 points) are detectable, so a null result will be reported as inconclusive. **M3 replaces M5** here because a constructed pair has no coherent neighbouring utterances for M5's context stage; M3 has the same encoders and a similar text dominance (text wins 92.8%, uncorrected probability), so M1 (balanced) and M3 (strong text) are run under one identical procedure.
+
+| Proposal commitment | Status |
+|:-------------------------------|:------------------------------------------|
+| Baselines on official splits, weighted and macro F1 | done (Table 1) |
+| Effects of removing or changing a modality | done, extended: swap test; silence and mean replacement run on an earlier model only |
+| Gate weight versus confidence-based signal | partly: confidence rule analysed, its agreement is partly structural |
+| Spearman and ranking agreement | done |
+| Gradient / SHAP signals (optional) | not started |
+| Conflict test | protocol frozen, annotation pending, no results |
+
+Table: Proposal milestones and their status.
+
+**Next.** Oct 28 to Nov 2: annotation and adjudication of the pilot package (proceed only if reviewer agreement is acceptable). Nov 3 to 17: build, verify and run the test-split conflict study on M1 and M3; ablate what the gate sees (it reads MiniLM text embeddings even where the text head reads RoBERTa). Nov 18 to 24: a controlled series that degrades one modality in a single architecture with several trained heads, and robustness to matched replacements. Dec: final report.
+
+**Limitations.** Two model families we built on one dataset; heads are shared across gates, so intervals reflect test-set sampling, not head-training variance; random replacements create unnatural pairs (Hessel and Lee note the same for EMAP); the gate's design differs from published feature-level gates. Code, protocols and result tables are in the project repository (conflict protocol committed as 4f4c662).
 
 ## References
-Poria, S., et al. (2019). MELD: A multimodal multi-party dataset for emotion recognition in conversations. ACL.
+\footnotesize
+Poria et al. (2019). MELD: A multimodal multi-party dataset for emotion recognition in conversations. *ACL*.
 
-Liu, P., Li, K., Meng, H. (2020). Group gated fusion on attention-based bidirectional alignment for multimodal emotion recognition. Interspeech 2020 (arXiv 2201.06309).
+Liu, P., Li, K., Meng, H. (2020). Group gated fusion on attention-based bidirectional alignment for multimodal emotion recognition. *Interspeech 2020* (arXiv:2201.06309).
 
-He, Z., Xiao, Y. (2025). LPGNet: A lightweight network with parallel attention and gated fusion for multimodal emotion recognition. arXiv 2508.08925 (preprint; a journal version was not found).
+He, Z., Xiao, Y. (2026). LPGNet: A lightweight network with parallel attention and gated fusion for multimodal emotion recognition. *Circuits, Systems, and Signal Processing* 45(9):7634--7652. doi:10.1007/s00034-026-03547-w (arXiv:2508.08925; quotations here are from the arXiv v1 text).
 
-Hessel, J., Lee, L. (2020). Does my multimodal model learn cross-modal interactions? It's harder to tell than you might think! EMNLP.
+Hessel, J., Lee, L. (2020). Does my multimodal model learn cross-modal interactions? It's harder to tell than you might think! *EMNLP* (arXiv:2010.06572).
 
-Jin, W., Sanjabi, M., Nie, S., Tan, L., Ren, X., Firooz, H. (2021). MSD: Saliency-aware knowledge distillation for multimodal understanding. Findings of EMNLP 2021 (arXiv 2101.01881).
+Jin, W., Sanjabi, M., Nie, S., Tan, L., Ren, X., Firooz, H. (2021). MSD: Saliency-aware knowledge distillation for multimodal understanding. *Findings of EMNLP 2021* (arXiv:2101.01881).
 
-Jain, S., Wallace, B. (2019). Attention is not explanation. NAACL.
-
-Wiegreffe, S., Pinter, Y. (2019). Attention is not not explanation. EMNLP-IJCNLP.
-
-Jacovi, A., Goldberg, Y. (2020). Towards faithfully interpretable NLP systems: How should we define and evaluate faithfulness? ACL.
+Jain, S., Wallace, B. C. (2019). Attention is not explanation. *NAACL*. Wiegreffe, S., Pinter, Y. (2019). Attention is not not explanation. *EMNLP-IJCNLP*. Jacovi, A., Goldberg, Y. (2020). Towards faithfully interpretable NLP systems: How should we define and evaluate faithfulness? *ACL*.
