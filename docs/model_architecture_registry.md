@@ -4,7 +4,7 @@ Every cell comes from a script or a saved object named in the Source column. UNV
 ## Shared pieces
 | Piece | Specification | Source |
 |---|---|---|
-| Data | MELD, official train/dev/test; train re-split BY DIALOGUE into clf2 ("clf", 8,004 rows incl. dialogue-level 80%) and gate2 ("gate", 1,984 rows) with numpy rng 3000 for the v2 split; dev 1,108; test 2,610 (the clf pool used as donors holds 7,990 rows after masking in 08; the v2 pipeline reports 8,004, UNVERIFIED which of the two counts the swap uses for M1 to M5) | `29_context_pipeline.py` header, `08_resampling_full.py` header |
+| Data | MELD, official train/dev/test; train re-split BY DIALOGUE into clf2 ("clf", 8,004 rows incl. dialogue-level 80%) and gate2 ("gate", 1,984 rows) with numpy rng 3000 for the v2 split; dev 1,108; test 2,610 (the swap pool for M0b to M5 is these 8,004 rows, verified from the saved pipeline and the cached embeddings, 2026-10-25; the 7,990 in the headers of steps 04 to 20 is the original split's clf size) | `29_context_pipeline.py` header, `08_resampling_full.py` header |
 | Gate | `LearnedGate`: Linear(384 + 1024 -> 128), ReLU, Linear(128 -> 1), Sigmoid; 180,481 parameters; input = MiniLM text embedding (384) and the 1,024-d audio embedding ("headline gate inputs") in EVERY model below, including those whose text head reads RoBERTa | `common.py` lines 76 to 80; `29_context_pipeline.py` header; `33_eval_harness.py` header |
 | Gate training | class-weighted CE on gate2 using the heads' out-of-sample probabilities; Adam lr 1e-3, full batch, early stopping on dev loss (patience 20, check every 50 steps, max 5,000) | `common.py` `train_full_batch`, `train_gate` |
 | Fusion | p = w p_text + (1 - w) p_audio on probability vectors (late fusion) | `common.py` |

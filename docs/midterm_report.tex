@@ -142,23 +142,27 @@ the swap-test winner, compared with an always-text rule? RQ2: how does
 this change as one modality dominates? RQ3 (from our proposal): does
 agreement fall when text and audio express conflicting emotions? RQ1 and
 RQ2 are answered preliminarily here; RQ3 is not yet tested.
+\textbf{Hypotheses.} H1 (exploratory): the weight's gain over
+always-text shrinks as one modality dominates. H2 (from the proposal,
+prospective): agreement is lower on verified conflicting text--audio
+pairs than on matched same-emotion controls.
 
 \subsection{2. Related work: what is known, and what we
 add}\label{related-work-what-is-known-and-what-we-add}
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1596}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3298}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0957}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4149}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1375}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3125}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1750}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3750}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Work
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 What is gated or intervened on
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Tested against interventions?
+Gate weights checked against interventions?
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 How our audit differs
 \end{minipage} \\
@@ -171,14 +175,15 @@ contribution weights'' (Sec. 3.6) & no & one scalar weight on class
 probabilities, tested utterance by utterance \\
 He, Xiao 2026 (LPGNet) & feature gates and softmax weights over
 modalities; ``adaptively assigns importance to each modality'' & no
-(module ablation only) & same \\
+(whole-module ablation) & same \\
 Hessel, Lee 2020 & EMAP: output averaged over other examples' values of
-one input (image+text) & no gates studied & same averaging idea, read at
-one utterance's predicted class and compared with the model's own
-weight \\
+one input (image+text) & n/a: no gates; the intervention is the tool &
+same averaging idea, read at one utterance's predicted class and
+compared with the model's own weight \\
 Jin et al.~2021 & per-instance modality saliency by masking, used to
-weight distillation losses & no & real-utterance substitution; audits a
-weight instead of training with scores \\
+weight distillation losses & n/a: masking saliency used for training; no
+gate weights compared & real-utterance substitution; audits a weight
+instead of training with scores \\
 \end{longtable}
 }
 
@@ -267,11 +272,12 @@ predictions toward rare emotions; the correction partly undoes that by
 multiplying each emotion's fused probability by (its training
 frequency)\textsuperscript{α} and renormalising, with α chosen on the
 dev set (never on test; 0.25 for M1, 0.5 for M5). \emph{Illustrative
-example (made-up numbers):} with three emotions, fused probabilities
-neutral 0.38, joy 0.42, anger 0.20 and training frequencies 0.47, 0.17,
-0.11, α = 0.25 gives scores 0.31, 0.27, 0.12, which renormalise to
-neutral 0.45, joy 0.39, anger 0.17, so the prediction moves from joy to
-neutral. All results below that carry an F1 use this corrected rule.
+example (made-up numbers, three emotions instead of seven):} fused
+probabilities neutral 0.38, joy 0.42, anger 0.20 and training
+frequencies 0.50, 0.30, 0.20 (summing to one); with α = 0.25 the scores
+are 0.320, 0.311, 0.134, which renormalise to neutral 0.418, joy 0.407,
+anger 0.175, so the prediction moves from joy to neutral. All results
+below that carry an F1 use this corrected rule.
 
 \textbf{Swap test (plain English).} For one utterance we freeze the
 emotion the model first predicted. To measure the text's influence, we
@@ -295,7 +301,7 @@ so no test outcome selects it). \textbf{Gain} is agreement minus that
 baseline. Intervals are 95\% from a bootstrap that resamples whole test
 dialogues (1,000 draws).
 
-\needspace{9\baselineskip}
+\needspace{16\baselineskip}
 
 \subsection{4. Results}\label{results}
 
@@ -447,7 +453,9 @@ are shared across gates, so intervals reflect test-set sampling, not
 head-training variance; random replacements create unnatural pairs
 (Hessel and Lee note the same for EMAP); the gate's design differs from
 published feature-level gates. Code, protocols and result tables are in
-the project repository (conflict protocol committed as 4f4c662).
+the project repository (corrected-rule protocol committed as 4f4c662
+before its run; conflict protocol frozen in 5f878c7 and amended before
+annotation in ff55b48).
 
 \subsection{References}\label{references}
 

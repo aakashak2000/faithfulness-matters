@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.4.28)  25 OCT 2026 20:02
+This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.4.28)  25 OCT 2026 21:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1302,20 +1302,21 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 LaTeX Font Info:    Font shape `TU/Helvetica(0)/m/n' will be
 (Font)              scaled to size 7.0pt on input line 123.
 LaTeX Font Info:    Font shape `TU/Helvetica(0)/m/n' will be
-(Font)              scaled to size 8.0pt on input line 150.
+(Font)              scaled to size 8.0pt on input line 154.
  [1
 
 ]
 LaTeX Font Info:    Font shape `TU/Helvetica(0)/m/n' will be
-(Font)              scaled to size 9.0pt on input line 221.
+(Font)              scaled to size 9.0pt on input line 226.
+
+[2]
 LaTeX Font Info:    Font shape `TU/Helvetica(0)/b/n' will be
-(Font)              scaled to size 8.0pt on input line 335.
+(Font)              scaled to size 8.0pt on input line 341.
 LaTeX Font Info:    Font shape `TU/Helvetica(0)/m/it' will be
-(Font)              scaled to size 8.0pt on input line 337.
+(Font)              scaled to size 8.0pt on input line 343.
 File: ../figures/fig7_gain_corrected_rule.pdf Graphic file (type pdf)
 <use ../figures/fig7_gain_corrected_rule.pdf>
-
-[2] [3] [4] (./midterm_report.aux)
+ [3] [4] (./midterm_report.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
@@ -1324,7 +1325,7 @@ L3 programming layer <2026-01-19>
 Here is how much of TeX's memory you used:
  20603 strings out of 468168
  377449 string characters out of 5432815
- 985165 words of memory out of 5000000
+ 985164 words of memory out of 5000000
  49066 multiletter control sequences out of 15000+600000
  634244 words of font info for 102 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
