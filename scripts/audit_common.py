@@ -314,7 +314,7 @@ def build_pool_masks(ok, emb, emb_pool, row_spk, don_spk, pools, seed=544, k=POO
     return masks, included
 
 
-def pool_runner(tag, alpha):
+def pool_runner(tag, alpha, return_model=False):
     """Rebuild a model with its cached gates. Returns meta, gate embeddings, the mutable valid-donor dict, gates, and
     split_fn(gate, split) -> core2 output dict (uses whatever masks are in the dict at call time)."""
     cache = torch.load(CACHE / f"gates_{tag}.pt")
@@ -327,7 +327,8 @@ def pool_runner(tag, alpha):
             g.load_state_dict(sd)
             g.eval()
             gates.append(g)
-        return B["D"]["meta"], B["H"], B["ok"], gates, lambda g, split: harness_split(B, th, ah, g, split, alpha)[3]
+        fn = lambda g, split: harness_split(B, th, ah, g, split, alpha)[3]
+        return (B["D"]["meta"], B["H"], B["ok"], gates, fn) + ((B,) if return_model else ())
     M = build_m5()
     gates = []
     for _, sd in cache.items():
@@ -335,7 +336,8 @@ def pool_runner(tag, alpha):
         g.load_state_dict(sd)
         g.eval()
         gates.append(g)
-    return M["D"]["meta"], M["G"], M["ok"], gates, lambda g, split: m5_split(M, g, split, alpha)[3]
+    fn = lambda g, split: m5_split(M, g, split, alpha)[3]
+    return (M["D"]["meta"], M["G"], M["ok"], gates, fn) + ((M,) if return_model else ())
 
 
 def swapfree_features(W, pt, pa, mt, ma):
