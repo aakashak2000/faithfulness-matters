@@ -2,8 +2,11 @@
 before this script was run). Raw rule, frozen gate. Under a shuffled weight the fused class, distinctiveness and swap winner are
 all recomputed, so the null is a consistent random-assignment gate. Exploratory. Steps 50 and 51 outputs are not modified.
 
+Version 3 (2026-11-19): also run without the 42 audio_shared rows (results/decomposition_null_v2_no_audio_shared.csv); helpers moved
+to common.py and audit_common.py. All-row output unchanged.
+
 Usage:  python scripts/52_recomputed_null.py
-Output: results/decomposition_null_v2.csv
+Output: results/decomposition_null_v2.csv, results/decomposition_null_v2_no_audio_shared.csv
 """
 import importlib
 import sys
@@ -13,11 +16,11 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import DATA, RESULTS  # noqa: E402
+from audit_common import donor_pool_means  # noqa: E402
+from common import DATA, RESULTS, auroc, dialogue_draws  # noqa: E402
 
-r49 = importlib.import_module("49_rescoring")
-r51 = importlib.import_module("51_gate_free_tau")
-auroc, N_BOOT = r49.auroc, r49.N_BOOT
+N_BOOT = importlib.import_module("06_analysis").N_BOOT
+OUT = {"all": "decomposition_null_v2.csv", "without_audio_shared": "decomposition_null_v2_no_audio_shared.csv"}
 N_PERM_POINT, N_PERM_DRAW = 200, 20
 
 
@@ -53,12 +56,12 @@ def stats(W, pt, pa, mt, ma, y, idx, rng, n_perm):
 
 
 def main():
-    rows = []
+    rows_by = {"all": [], "without_audio_shared": []}
     for tag in ("M1", "M5"):
         print(f"== {tag}", flush=True)
         A = np.load(DATA / f"corrected_rule_arrays_{tag}.npz")
         W = (A["s_w"] + 1) / 2
-        pt, pa, mt, ma, y, meta = r51.pool_means(tag)
+        pt, pa, mt, ma, y, meta = donor_pool_means(tag)
         # validation
         bad_c = bad_l = 0
         for g in range(len(W)):
@@ -68,20 +71,23 @@ def main():
             bad_l += int((lab != (A["e_raw_fro"][g] > 0))[nz].sum())
         print(f"VALIDATION recomputed class mismatches {bad_c}, label mismatches {bad_l}", flush=True)
         assert bad_c == 0 and bad_l == 0
-        dlg = meta["dialogue_id"].values
-        groups = [np.flatnonzero(dlg == g) for g in np.unique(dlg)]
-        rng = np.random.default_rng(0)
-        draws = [np.concatenate([groups[k] for k in rng.integers(0, len(groups), len(groups))]) for _ in range(N_BOOT)]
-        prng = np.random.default_rng(1)
-        p = stats(W, pt, pa, mt, ma, y, np.arange(len(y)), prng, N_PERM_POINT)
-        bs = [stats(W, pt, pa, mt, ma, y, d, prng, N_PERM_DRAW) for d in draws]
-        for k, v in p.items():
-            lo, hi = np.percentile([b[k] for b in bs], [2.5, 97.5])
-            rows.append({"model": tag, "null": "recomputed_prediction_v2", "metric": k, "value": v, "lo": lo, "hi": hi})
+        draws = dialogue_draws(meta["dialogue_id"].values, N_BOOT)
+        n = len(y)
+        shared = meta["audio_shared"].values.astype(bool)
+        for rl, base in (("all", np.arange(n)), ("without_audio_shared", np.flatnonzero(~shared))):
+            mask = np.zeros(n, bool)
+            mask[base] = True
+            prng = np.random.default_rng(1)
+            p = stats(W, pt, pa, mt, ma, y, base, prng, N_PERM_POINT)
+            bs = [stats(W, pt, pa, mt, ma, y, d[mask[d]], prng, N_PERM_DRAW) for d in draws]
+            for k, v in p.items():
+                lo, hi = np.percentile([b[k] for b in bs], [2.5, 97.5])
+                rows_by[rl].append({"model": tag, "null": "recomputed_prediction_v2", "metric": k, "value": v, "lo": lo, "hi": hi})
         print(f"{tag} done", flush=True)
-    df = pd.DataFrame(rows)
-    df.to_csv(RESULTS / "decomposition_null_v2.csv", index=False)
-    print(df.to_string(index=False), flush=True)
+    for rl, fn in OUT.items():
+        df = pd.DataFrame(rows_by[rl])
+        df.to_csv(RESULTS / fn, index=False)
+        print(f"wrote {fn}\n" + df.to_string(index=False), flush=True)
 
 
 if __name__ == "__main__":

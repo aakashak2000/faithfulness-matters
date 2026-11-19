@@ -204,3 +204,65 @@ def m5_split(M, g, split, alpha):
         ok_t, ok_a = M["ok"][split]
         out = core2(pt, pa, w0, pool_fn, pre_fn, lin2.weight[0], lin2.bias[0], ok_t, ok_a, M["lp"], alpha)
     return pt, pa, w0, out
+
+
+# ---------------------------------------------------------------- loaders for steps 49 to 52 (moved from 49_rescoring and 51_gate_free_tau, unchanged)
+def load_rescoring_inputs(tag):
+    """Test and dev head probabilities, gate weights (all cached gates) and labels for M1 or M5 (steps 49 to 52)."""
+    cache = torch.load(CACHE / f"gates_{tag}.pt")
+    out = {}
+    if tag == "M1":
+        B = build_harness()
+        th, ah = B["specs"]["M1 stronger audio"]
+        ET, EA = B["ET"], B["EA"]
+        with torch.no_grad():
+            for sp in ("dev", "test"):
+                pt, pa = torch.softmax(th(ET[sp]), 1).numpy(), torch.softmax(ah(EA[sp]), 1).numpy()
+                ws = []
+                for _, sd in cache.items():
+                    g = LearnedGate(B["dT"] + 384, B["dA"] + 1024)
+                    g.load_state_dict(sd)
+                    g.eval()
+                    ws.append(g(ET[sp], EA[sp]).squeeze(1).numpy())
+                out[sp] = dict(pt=pt, pa=pa, w=np.stack(ws), y=B["y"][sp].numpy())
+        out["meta"] = B["D"]["meta"]["test"]
+    else:
+        M = build_m5()
+        with torch.no_grad():
+            for sp in ("dev", "test"):
+                pt, pa = torch.softmax(M["Z2"]["text"][sp], 1).numpy(), torch.softmax(M["Z2"]["audio"][sp], 1).numpy()
+                ws = []
+                for _, sd in cache.items():
+                    g = LearnedGate(384, 1024)
+                    g.load_state_dict(sd)
+                    g.eval()
+                    ws.append(g(*M["G"][sp]).squeeze(1).numpy())
+                out[sp] = dict(pt=pt, pa=pa, w=np.stack(ws), y=M["y"][sp].numpy())
+        out["meta"] = M["D"]["meta"]["test"]
+    return out
+
+
+def donor_pool_means(tag):
+    """Per test row: mean donor probability vector for text and audio, over valid donors only. Returns pt, pa, mt, ma, y, meta."""
+    B = build_harness() if tag == "M1" else None
+    M = build_m5() if tag == "M5" else None
+    with torch.no_grad():
+        if tag == "M1":
+            th, ah = B["specs"]["M1 stronger audio"]
+            pt, pa = torch.softmax(th(B["ET"]["test"]), 1), torch.softmax(ah(B["EA"]["test"]), 1)
+            Pt, Pa = torch.softmax(th(B["ET"]["clf"]), 1), torch.softmax(ah(B["EA"]["clf"]), 1)
+            ok_t, ok_a = (m.float() for m in B["ok"]["test"])
+            mt = (ok_t @ Pt) / ok_t.sum(1, keepdim=True)
+            ma = (ok_a @ Pa) / ok_a.sum(1, keepdim=True)
+            return pt.numpy(), pa.numpy(), mt.numpy(), ma.numpy(), B["y"]["test"].numpy(), B["D"]["meta"]["test"]
+        pt, pa = torch.softmax(M["Z2"]["text"]["test"], 1), torch.softmax(M["Z2"]["audio"]["test"], 1)
+        out = {}
+        for kind in ("text", "audio"):
+            ok = M["ok"]["test"][0 if kind == "text" else 1].float()
+            ms = []
+            for s in range(0, ok.shape[0], 100):
+                P = torch.softmax(M["donor"][kind][None] + M["ctxpart"][kind]["test"][s:s + 100, None], 2)   # (rows, donors, 7)
+                o = ok[s:s + 100]
+                ms.append((o[:, :, None] * P).sum(1) / o.sum(1, keepdim=True))
+            out[kind] = torch.cat(ms)
+        return pt.numpy(), pa.numpy(), out["text"].numpy(), out["audio"].numpy(), M["y"]["test"].numpy(), M["D"]["meta"]["test"]

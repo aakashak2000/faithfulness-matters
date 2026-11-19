@@ -1,6 +1,9 @@
 """Step 50: decomposition of the weight's agreement with the swap into structural and learned parts. Protocol: docs/decomposition_protocol.md
 (written 2026-11-17 before this script was run). Exploratory. No swap is rerun and no model is trained.
 
+Version 3 (2026-11-19, docs/decomposition_protocol.md): also run without the 42 audio_shared rows
+(results/decomposition_no_audio_shared.csv); the all-row output is unchanged. Helpers now come from common.py and audit_common.py.
+
 Usage:  python scripts/50_decomposition.py
 Needs: data/corrected_rule_arrays_{M1,M5}.npz, data/audit_cache/gates_{M1,M5}.pt
 Output: results/decomposition.csv
@@ -11,29 +14,14 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy.stats import rankdata
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import DATA, RESULTS  # noqa: E402
+from audit_common import load_rescoring_inputs  # noqa: E402
+from common import DATA, RESULTS, auroc, dialogue_draws, ece, spearman  # noqa: E402
 
-r49 = importlib.import_module("49_rescoring")
-auroc, load_model, N_BOOT = r49.auroc, r49.load_model, r49.N_BOOT
+N_BOOT = importlib.import_module("06_analysis").N_BOOT
 N_PERM_POINT, N_PERM_DRAW = 200, 20
-
-
-def spearman(a, b):
-    return np.corrcoef(rankdata(a), rankdata(b))[0, 1]
-
-
-def ece(p, y, bins=15):
-    conf, pred = p.max(1), p.argmax(1)
-    edges = np.linspace(0, 1, bins + 1)
-    out = 0.0
-    for lo, hi in zip(edges[:-1], edges[1:]):
-        m = (conf > lo) & (conf <= hi)
-        if m.any():
-            out += m.mean() * abs((pred[m] == y[m]).mean() - conf[m].mean())
-    return out
+OUT = {"all": "decomposition.csv", "without_audio_shared": "decomposition_no_audio_shared.csv"}
 
 
 def stats(W, TAU, LAB, R, ONLY, RC, idx, rng, n_perm):
@@ -61,11 +49,11 @@ def stats(W, TAU, LAB, R, ONLY, RC, idx, rng, n_perm):
 
 
 def main():
-    rows = []
+    rows_by = {"all": [], "without_audio_shared": []}
     for tag in ("M1", "M5"):
         print(f"== {tag}", flush=True)
         A = np.load(DATA / f"corrected_rule_arrays_{tag}.npz")
-        Xm = load_model(tag)
+        Xm = load_rescoring_inputs(tag)
         X = Xm["test"]
         W = (A["s_w"] + 1) / 2
         assert np.abs(W - X["w"]).max() < 1e-5
@@ -84,41 +72,45 @@ def main():
         ag = np.mean([((A["s_w"][g] > 0) == (E[g] > 0))[(A["s_w"][g] != 0) & nz[g]].mean() for g in range(len(W))])
         print(f"VALIDATION identity mismatches {mism}, closed-form err {cf:.1e}, agreement {ag:.10f} vs step 43 {ref:.10f}", flush=True)
         assert mism == 0 and cf < 1e-4 and abs(ag - ref) < 1e-9
-        prim = np.mean([((W[g] > TAU[g]) == (A["e_cor_real"][g] > 0)).mean() for g in range(len(W))])
-        print(f"share of rows where 1[w > tau] matches the primary effect (corrected, recomputed): {prim:.4f}", flush=True)
-
         y = X["y"]
         t_ok, a_ok = X["pt"].argmax(1) == y, X["pa"].argmax(1) == y
         ONLY = t_ok != a_ok
         R = t_ok
         RC = np.log(np.clip(X["pt"][np.arange(len(y)), y], 1e-12, None)) - np.log(np.clip(X["pa"][np.arange(len(y)), y], 1e-12, None))
-
-        dlg = Xm["meta"]["dialogue_id"].values
-        groups = [np.flatnonzero(dlg == g) for g in np.unique(dlg)]
-        rng = np.random.default_rng(0)
-        draws = [np.concatenate([groups[k] for k in rng.integers(0, len(groups), len(groups))]) for _ in range(N_BOOT)]
-        prng = np.random.default_rng(1)
+        draws = dialogue_draws(Xm["meta"]["dialogue_id"].values, N_BOOT)
         n = W.shape[1]
-        pt_ = stats(W, TAU, LAB, R, ONLY, RC, np.arange(n), prng, N_PERM_POINT)
-        bs = [stats(W, TAU, LAB, R, ONLY, RC, d, prng, N_PERM_DRAW) for d in draws]
-        for k, v in pt_.items():
-            arr = np.array([b[k] for b in bs])
-            lo, hi = np.nanpercentile(arr, [2.5, 97.5])
-            rows.append({"model": tag, "part": "decomposition", "metric": k, "value": v, "lo": lo, "hi": hi})
-        rows.append({"model": tag, "part": "decomposition", "metric": "share_tau_rule_matches_primary_effect", "value": prim})
+        shared = Xm["meta"]["audio_shared"].values.astype(bool)
+        for rl, base in (("all", np.arange(n)), ("without_audio_shared", np.flatnonzero(~shared))):
+            rows = rows_by[rl]
+            mask = np.zeros(n, bool)
+            mask[base] = True
+            prim = np.mean([((W[g][base] > TAU[g][base]) == (A["e_cor_real"][g][base] > 0)).mean() for g in range(len(W))])
+            print(f"[{rl}] share of rows where 1[w > tau] matches the primary effect (corrected, recomputed): {prim:.4f}", flush=True)
+            prng = np.random.default_rng(1)
+            pt_ = stats(W, TAU, LAB, R, ONLY, RC, base, prng, N_PERM_POINT)
+            bs = [stats(W, TAU, LAB, R, ONLY, RC, d[mask[d]], prng, N_PERM_DRAW) for d in draws]
+            for k, v in pt_.items():
+                arr = np.array([b[k] for b in bs])
+                lo, hi = np.nanpercentile(arr, [2.5, 97.5])
+                rows.append({"model": tag, "part": "decomposition", "metric": k, "value": v, "lo": lo, "hi": hi})
+            rows.append({"model": tag, "part": "decomposition", "metric": "share_tau_rule_matches_primary_effect", "value": prim})
 
-        # ---- heads (gate-free)
-        for head, P in (("text", X["pt"]), ("audio", X["pa"])):
-            ent = -(P * np.log(np.clip(P, 1e-12, None))).sum(1)
-            for k, v in (("ece", ece(P, y)), ("mean_entropy", ent.mean()), ("mean_max_prob", P.max(1).mean()), ("accuracy", (P.argmax(1) == y).mean())):
-                rows.append({"model": tag, "part": f"head_{head}", "metric": k, "value": float(v)})
-        for k, v in (("mean_d_text", dt.mean()), ("median_d_text", np.median(dt, 1).mean()), ("mean_d_audio", da.mean()),
-                     ("median_d_audio", np.median(da, 1).mean()), ("median_tau", np.median(TAU, 1).mean()), ("share_tau_above_05", (TAU > 0.5).mean())):
-            rows.append({"model": tag, "part": "distinctiveness", "metric": k, "value": float(v)})
+            # ---- heads (gate-free)
+            yb = y[base]
+            for head, P in (("text", X["pt"] if rl == "all" else X["pt"][base]), ("audio", X["pa"] if rl == "all" else X["pa"][base])):
+                ent = -(P * np.log(np.clip(P, 1e-12, None))).sum(1)
+                for k, v in (("ece", ece(P, yb, bins=15)), ("mean_entropy", ent.mean()), ("mean_max_prob", P.max(1).mean()), ("accuracy", (P.argmax(1) == yb).mean())):
+                    rows.append({"model": tag, "part": f"head_{head}", "metric": k, "value": float(v)})
+            # all rows: use the full arrays so float32 summation order (and the committed output) is unchanged
+            dtb, dab, tb = (dt, da, TAU) if rl == "all" else (dt[:, base], da[:, base], TAU[:, base])
+            for k, v in (("mean_d_text", dtb.mean()), ("median_d_text", np.median(dtb, 1).mean()), ("mean_d_audio", dab.mean()),
+                         ("median_d_audio", np.median(dab, 1).mean()), ("median_tau", np.median(tb, 1).mean()), ("share_tau_above_05", (tb > 0.5).mean())):
+                rows.append({"model": tag, "part": "distinctiveness", "metric": k, "value": float(v)})
         print(f"{tag} done", flush=True)
-    df = pd.DataFrame(rows)
-    df.to_csv(RESULTS / "decomposition.csv", index=False)
-    print(f"wrote {RESULTS / 'decomposition.csv'} ({len(df)} rows)", flush=True)
+    for rl, fn in OUT.items():
+        df = pd.DataFrame(rows_by[rl])
+        df.to_csv(RESULTS / fn, index=False)
+        print(f"wrote {RESULTS / fn} ({len(df)} rows)", flush=True)
 
 
 if __name__ == "__main__":

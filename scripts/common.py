@@ -177,3 +177,56 @@ def set_determinism(seed):
     torch.manual_seed(seed)
     np.random.seed(seed)
     torch.use_deterministic_algorithms(True)
+
+
+# ----------------------------------------------------------------------------- shared analysis helpers (steps 49 to 52)
+
+def auroc(score, label):
+    """Rank-based AUROC of score for the boolean label; NaN if a class is empty."""
+    from scipy.stats import rankdata
+    n1, n0 = label.sum(), (~label).sum()
+    if n1 == 0 or n0 == 0:
+        return np.nan
+    r = rankdata(score)
+    return (r[label].sum() - n1 * (n1 + 1) / 2) / (n1 * n0)
+
+
+def bal_acc(pred, label):
+    return 0.5 * ((pred[label]).mean() + (~pred[~label]).mean())
+
+
+def kappa(pred, label):
+    po = (pred == label).mean()
+    pe = pred.mean() * label.mean() + (1 - pred.mean()) * (1 - label.mean())
+    return (po - pe) / (1 - pe)
+
+
+def js_div(p, q):
+    """Jensen-Shannon divergence (base 2) between rows of p and q."""
+    m = 0.5 * (p + q)
+    kl = lambda a, b: (a * (np.log2(np.clip(a, 1e-12, None)) - np.log2(np.clip(b, 1e-12, None)))).sum(1)
+    return 0.5 * kl(p, m) + 0.5 * kl(q, m)
+
+
+def spearman(a, b):
+    from scipy.stats import rankdata
+    return np.corrcoef(rankdata(a), rankdata(b))[0, 1]
+
+
+def ece(p, y, bins):
+    """Expected calibration error on max probability, equal-width bins. Step 35 uses bins=10, step 50 bins=15."""
+    conf, pred = p.max(1), p.argmax(1)
+    edges = np.linspace(0, 1, bins + 1)
+    out = 0.0
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        m = (conf > lo) & (conf <= hi)
+        if m.any():
+            out += m.mean() * abs((pred[m] == y[m]).mean() - conf[m].mean())
+    return out
+
+
+def dialogue_draws(dialogue_ids, n_boot, seed=0):
+    """Dialogue-cluster bootstrap draws (row indices), built exactly as in step 43."""
+    groups = [np.flatnonzero(dialogue_ids == g) for g in np.unique(dialogue_ids)]
+    rng = np.random.default_rng(seed)
+    return [np.concatenate([groups[k] for k in rng.integers(0, len(groups), len(groups))]) for _ in range(n_boot)]
