@@ -242,8 +242,9 @@ def load_rescoring_inputs(tag):
     return out
 
 
-def donor_pool_means(tag, split="test"):
-    """Per row of `split` (default test): mean donor probability vector for text and audio, over valid donors only. Returns pt, pa, mt, ma, y, meta."""
+def donor_pool_means(tag, split="test", ok=None):
+    """Per row of `split` (default test): mean donor probability vector for text and audio, over valid donors only (or over the donors in
+    `ok`, a (text, audio) mask pair, if given). Returns pt, pa, mt, ma, y, meta."""
     B = build_harness() if tag == "M1" else None
     M = build_m5() if tag == "M5" else None
     with torch.no_grad():
@@ -251,18 +252,116 @@ def donor_pool_means(tag, split="test"):
             th, ah = B["specs"]["M1 stronger audio"]
             pt, pa = torch.softmax(th(B["ET"][split]), 1), torch.softmax(ah(B["EA"][split]), 1)
             Pt, Pa = torch.softmax(th(B["ET"]["clf"]), 1), torch.softmax(ah(B["EA"]["clf"]), 1)
-            ok_t, ok_a = (m.float() for m in B["ok"][split])
+            ok_t, ok_a = (m.float() for m in (B["ok"][split] if ok is None else ok))
             mt = (ok_t @ Pt) / ok_t.sum(1, keepdim=True)
             ma = (ok_a @ Pa) / ok_a.sum(1, keepdim=True)
             return pt.numpy(), pa.numpy(), mt.numpy(), ma.numpy(), B["y"][split].numpy(), B["D"]["meta"][split]
         pt, pa = torch.softmax(M["Z2"]["text"][split], 1), torch.softmax(M["Z2"]["audio"][split], 1)
         out = {}
         for kind in ("text", "audio"):
-            ok = M["ok"][split][0 if kind == "text" else 1].float()
+            okk = (M["ok"][split] if ok is None else ok)[0 if kind == "text" else 1].float()
             ms = []
-            for s in range(0, ok.shape[0], 100):
+            for s in range(0, okk.shape[0], 100):
                 P = torch.softmax(M["donor"][kind][None] + M["ctxpart"][kind][split][s:s + 100, None], 2)   # (rows, donors, 7)
-                o = ok[s:s + 100]
+                o = okk[s:s + 100]
                 ms.append((o[:, :, None] * P).sum(1) / o.sum(1, keepdim=True))
             out[kind] = torch.cat(ms)
         return pt.numpy(), pa.numpy(), out["text"].numpy(), out["audio"].numpy(), M["y"][split].numpy(), M["D"]["meta"][split]
+
+
+# ---------------------------------------------------------------- donor pools and swap-free features (steps 53 to 56)
+POOL_K = 50
+
+
+def donor_speakers():
+    """Speaker of each clf-split donor, in donor order (same order for M1 and M5)."""
+    P = torch.load(DATA / "v2_pipeline.pt", weights_only=False)
+    csv = pd.read_csv(DATA / "meld_csv" / "train_sent_emo.csv")
+    spk = {(a, b): s for a, b, s in zip(csv.Dialogue_ID, csv.Utterance_ID, csv.Speaker)}
+    tr = P["ids"]["train"]
+    return np.array([spk[tuple(int(x) for x in tr[i])] for i in np.asarray(P["rows"]["clf"])])
+
+
+def build_pool_masks(ok, emb, emb_pool, row_spk, don_spk, pools, seed=544, k=POOL_K):
+    """Per-utterance donor masks with exactly k valid donors. ok: (valid_text, valid_audio) bool (n, n_donors).
+    global50: random; speaker50: random from the same speaker (needs global50 first; rows without k such donors fall back to
+    global50 and are flagged not included); nn50: nearest by cosine in the swapped modality's embedding. One generator, rows in order."""
+    n = ok[0].shape[0]
+    rng = np.random.default_rng(seed)
+    masks, included = {}, np.ones(n, bool)
+    for pool in pools:
+        mt, ma = torch.zeros_like(ok[0]), torch.zeros_like(ok[1])
+        if pool == "nn50":
+            for m, valid, e, ep in ((mt, ok[0], emb[0], emb_pool[0]), (ma, ok[1], emb[1], emb_pool[1])):
+                sim = torch.nn.functional.normalize(e.float(), dim=1) @ torch.nn.functional.normalize(ep.float(), dim=1).T
+                sim[~valid] = -float("inf")
+                m.scatter_(1, sim.topk(k, dim=1).indices, True)
+        else:
+            for i in range(n):
+                for m, valid in ((mt, ok[0]), (ma, ok[1])):
+                    cand = np.flatnonzero(valid[i].numpy())
+                    if pool == "speaker50":
+                        same = cand[don_spk[cand] == row_spk[i]]
+                        if len(same) < k:
+                            included[i] = False
+                            m[i] = masks["global50"][0 if m is mt else 1][i]
+                            continue
+                        cand = same
+                    m[i, rng.choice(cand, k, replace=False)] = True
+        for m, valid in ((mt, ok[0]), (ma, ok[1])):
+            assert (m.sum(1) == k).all() and not (m & ~valid).any(), f"{pool}: mask check failed"
+        masks[pool] = (mt, ma)
+    return masks, included
+
+
+def pool_runner(tag, alpha):
+    """Rebuild a model with its cached gates. Returns meta, gate embeddings, the mutable valid-donor dict, gates, and
+    split_fn(gate, split) -> core2 output dict (uses whatever masks are in the dict at call time)."""
+    cache = torch.load(CACHE / f"gates_{tag}.pt")
+    if tag == "M1":
+        B = build_harness()
+        th, ah = B["specs"]["M1 stronger audio"]
+        gates = []
+        for _, sd in cache.items():
+            g = LearnedGate(B["dT"] + 384, B["dA"] + 1024)
+            g.load_state_dict(sd)
+            g.eval()
+            gates.append(g)
+        return B["D"]["meta"], B["H"], B["ok"], gates, lambda g, split: harness_split(B, th, ah, g, split, alpha)[3]
+    M = build_m5()
+    gates = []
+    for _, sd in cache.items():
+        g = LearnedGate(384, 1024)
+        g.load_state_dict(sd)
+        g.eval()
+        gates.append(g)
+    return M["D"]["meta"], M["G"], M["ok"], gates, lambda g, split: m5_split(M, g, split, alpha)[3]
+
+
+def swapfree_features(W, pt, pa, mt, ma):
+    """Swap-free features per (gate, row), given donor-pool means. W: (gates, n). Returns (gates, n, 16) features, R2 and tau."""
+    from common import js_div
+    n = pt.shape[0]
+    ii = np.arange(n)
+    ent = lambda p: -(p * np.log(np.clip(p, 1e-12, None))).sum(1)
+    c0 = (0.5 * pt + 0.5 * pa).argmax(1)
+    d0t, d0a = np.abs(pt[ii, c0] - mt[ii, c0]), np.abs(pa[ii, c0] - ma[ii, c0])
+    shared = [pt.max(1), pa.max(1), ent(pt), ent(pa), (pt.argmax(1) == pa.argmax(1)).astype(float), js_div(pt, pa), d0t, d0a]
+    F, R2, TAU = [], [], []
+    for w in W:
+        c = (w[:, None] * pt + (1 - w[:, None]) * pa).argmax(1)
+        dt, da = np.abs(pt[ii, c] - mt[ii, c]), np.abs(pa[ii, c] - ma[ii, c])
+        tau = da / np.clip(dt + da, 1e-12, None)
+        r2 = w * dt / np.clip(w * dt + (1 - w) * da, 1e-12, None)
+        F.append(np.column_stack([w, np.abs(w - 0.5), r2, np.abs(r2 - 0.5), tau, np.abs(w - tau), dt, da] + shared))
+        R2.append(r2)
+        TAU.append(tau)
+    return np.stack(F), np.stack(R2), np.stack(TAU)
+
+
+def risk_curve(score, wrong, cover):
+    """Share of wrong claims among the top-scored fraction, for each coverage level."""
+    order = np.argsort(-score, kind="stable")
+    cw = np.cumsum(wrong[order])
+    k = np.maximum(1, np.ceil(cover * len(score)).astype(int))
+    return cw[k - 1] / k

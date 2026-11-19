@@ -43,3 +43,27 @@ Reading rule, fixed now: the learned score is a useful method if its AURC is low
 - Part A, |E[delta]|: share of test rows where speaker50 or nn50 disagrees with full, minus the noise floor (full vs global50): M1 0.140 [0.124, 0.155], M5 0.065 [0.053, 0.078]. Rule met: reference dependence is substantive in both models. It comes from nn50 (excess 0.106 M1, 0.044 M5); speaker50 is within noise (0.008 [-0.001, 0.018] M1, 0.000 M5). Gate agreement rates barely move across pools (M1 0.726 to 0.735), so the aggregate agreement is robust while the per-utterance winner is not.
 - Part B, primary (R2 claim, held-out speaker50): AURC learned minus margin M1 -0.024 [-0.032, -0.016], M5 -0.009 [-0.014, -0.005]. Rule met in both models.
 - Limits noted after the run: (1) speaker50 behaves like global50, so the "held-out" pool is close to a fitted one in distribution; nn50 was used in fitting (on dev rows). (2) The swap-free reliability check at 50% coverage does not improve for the R2 claim (M1 learned 0.671 vs random 0.666), so the score predicts stability of the claim, not whether it names the head that is correct. (3) Post hoc, not pre-registered: the fitted score is dominated by |w - tau| (distance of the weight from its break-even point). A single-feature |w - tau| abstention rule would need its own written comparison before being claimed. (4) The logistic-regression fit prints spurious BLAS overflow warnings on macOS; inputs are finite, the fit converges (37 iterations, M5 R2), and an independent scipy float64 fit agrees within 0.002 in probability.
+
+## Amendment 1: version 2 of part B, and part A additions (written 2026-11-19 after review, before any of this was run)
+Why: the score's main feature, |w - tau|, is the distance from the fusion identity's own decision boundary, so it is the baseline the equation gives for free, and it was never compared. Also, the held-out pool (speaker50) behaves like a pool used in fitting; nn50 is the only pool that behaves differently. Version 1 outputs stay as they are.
+
+Part B version 2:
+- Fit on dev using global50 and a new dev speaker50 pool (same construction as on test; dev rows without 50 same-speaker donors are dropped from the fit). nn50 is NOT used in fitting.
+- Held-out evaluation on test against nn50 (primary), on all 2,610 test rows (nn50 exists for every row). Secondary: speaker50 rows, as before.
+- Scores: learned (refitted as above, same features and settings), identity, margin, random. Identity score: for the R2 claim, |w - tau|; for the gate claim, |w - tau| when w and tau put the claim on the same side (that is, (w > 0.5) equals (w > tau)), and -|w - tau| when they disagree. Margin and random as in version 1.
+- Reading rule: the learned score adds something beyond the identity only if AURC(learned) minus AURC(identity) has a bootstrap interval below 0 for the R2 claim in BOTH models. Otherwise the conclusion is: confidence in a modality claim should be measured from the break-even point tau, and that follows from the fusion identity.
+- Note: the identity score was suggested by looking at version 1's fitted coefficients after the test results were seen; it is pre-registered here as a comparator, not as a discovery.
+- "Swap-free" means: no per-utterance swaps at inference, given precomputed donor-pool averages.
+
+Part A additions (descriptive):
+- Direction of flips between full and nn50: share of rows going text to audio and audio to text, with the mean change in d_t and d_a under nn50 donors.
+- global50 against nn50 and full against nn50 on all 2,610 test rows (not only the 2,156 speaker-eligible rows).
+- Noise floor over four random draws: global50 with seeds 544 (existing), 545, 546, 547; report the mean and range of full-versus-global50 disagreement.
+- Note: nearest neighbours for audio are found in the pooled 1,024-d gate embedding, while M1's audio head reads 51,200-d all-layer features.
+Outputs: `data/reference_pools_v2_{M1,M5}.npz`, `results/reference_sensitivity_v2.csv`, `results/selective_attribution_v2.csv` (scripts 55 and 56).
+
+## Amendment 1 results (recorded 2026-11-19 after the run; `results/reference_sensitivity_v2.csv`, `results/selective_attribution_v2.csv`)
+- Reading rule for part B version 2 NOT met: learned minus identity AURC, R2 claim, held-out nn50, all 2,610 rows: M1 -0.008 [-0.018, 0.001], M5 -0.005 [-0.011, 0.001]; both intervals include 0. Conclusion as fixed in advance: confidence in a modality claim should be measured from the break-even point tau, which follows from the fusion identity; the learned score adds no reliable gain on a pool it was not fitted on. (On speaker50, which resembles a fitted pool, learned beats identity: M1 -0.012 [-0.019, -0.006], M5 -0.009 [-0.013, -0.006].)
+- For the gate claim (text if w > 0.5) on nn50, the identity score beats the margin |w - 0.5| in M1 (AURC difference -0.025 [-0.034, -0.016]; risk at 50% coverage 0.111 vs 0.146) but not in M5 (+0.007 [0.001, 0.012]).
+- Part A: flips under nn50 lean one way: text to audio 0.116 vs audio to text 0.051 (M1), 0.054 vs 0.030 (M5). Similar-utterance donors shrink text distinctiveness more than audio (M1 d_text 0.199 to 0.114, d_audio 0.226 to 0.188; M5 d_text 0.268 to 0.191, d_audio 0.106 to 0.085). Noise floor over four random draws: M1 0.052 to 0.056, M5 0.037 to 0.046; nn50 excess over its mean on all rows: M1 0.113 [0.100, 0.126], M5 0.043 [0.033, 0.054].
+- Step 54 rerun after moving helpers to audit_common: outputs byte-identical.

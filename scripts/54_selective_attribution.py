@@ -14,37 +14,11 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from audit_common import donor_pool_means  # noqa: E402
-from common import DATA, RESULTS, dialogue_draws, js_div  # noqa: E402
+from audit_common import donor_pool_means, risk_curve, swapfree_features  # noqa: E402
+from common import DATA, RESULTS, dialogue_draws  # noqa: E402
 
 N_BOOT = importlib.import_module("06_analysis").N_BOOT
 COVER = np.arange(1, 21) / 20
-
-
-def features(W, pt, pa, mt, ma):
-    """Swap-free features per (gate, row). W: (gates, n)."""
-    n = pt.shape[0]
-    ii = np.arange(n)
-    ent = lambda p: -(p * np.log(np.clip(p, 1e-12, None))).sum(1)
-    c0 = (0.5 * pt + 0.5 * pa).argmax(1)
-    d0t, d0a = np.abs(pt[ii, c0] - mt[ii, c0]), np.abs(pa[ii, c0] - ma[ii, c0])
-    shared = [pt.max(1), pa.max(1), ent(pt), ent(pa), (pt.argmax(1) == pa.argmax(1)).astype(float), js_div(pt, pa), d0t, d0a]
-    F, R2 = [], []
-    for w in W:
-        c = (w[:, None] * pt + (1 - w[:, None]) * pa).argmax(1)
-        dt, da = np.abs(pt[ii, c] - mt[ii, c]), np.abs(pa[ii, c] - ma[ii, c])
-        tau = da / np.clip(dt + da, 1e-12, None)
-        r2 = w * dt / np.clip(w * dt + (1 - w) * da, 1e-12, None)
-        F.append(np.column_stack([w, np.abs(w - 0.5), r2, np.abs(r2 - 0.5), tau, np.abs(w - tau), dt, da] + shared))
-        R2.append(r2)
-    return np.stack(F), np.stack(R2)          # (gates, n, f), (gates, n)
-
-
-def risk_curve(score, wrong):
-    order = np.argsort(-score, kind="stable")
-    cw = np.cumsum(wrong[order])
-    k = np.maximum(1, np.ceil(COVER * len(score)).astype(int))
-    return cw[k - 1] / k
 
 
 def main():
@@ -95,8 +69,8 @@ def main():
 
         # ---------------- part B: selective attribution
         ptd, pad, mtd, mad, yd, _ = donor_pool_means(tag, "dev")
-        Fd, R2d = features(Wd, ptd, pad, mtd, mad)
-        Ft, R2t = features(Wt, pt, pa, mt, ma)
+        Fd, R2d, _ = swapfree_features(Wd, ptd, pad, mtd, mad)
+        Ft, R2t, _ = swapfree_features(Wt, pt, pa, mt, ma)
         claims = {"gate": (Wd > 0.5, Wt > 0.5, lambda W, R2: np.abs(W - 0.5)), "R2": (R2d > 0.5, R2t > 0.5, lambda W, R2: np.abs(R2 - 0.5))}
         dev_win = {p: P[f"dev_{p}_e_cor_real"] > 0 for p in ("global50", "nn50")}
         rng = np.random.default_rng(7)
@@ -119,7 +93,7 @@ def main():
                 def part_b(idx):
                     r = {}
                     for sname, S in scores.items():
-                        curves = np.stack([risk_curve(S[g, idx], wrong[g, idx]) for g in range(G)])
+                        curves = np.stack([risk_curve(S[g, idx], wrong[g, idx], COVER) for g in range(G)])
                         r[f"aurc_{sname}"] = curves.mean(1).mean()
                         for cv in (0.5, 0.75, 0.9):
                             r[f"risk_at_{int(cv * 100)}_{sname}"] = curves[:, int(round(cv * 20)) - 1].mean()
