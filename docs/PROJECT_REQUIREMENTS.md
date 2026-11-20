@@ -11,8 +11,8 @@ CSCI 544 (Applied NLP), Fall 2026. Team project, six members, **55% of the final
 | Proposal | 1 page, single-spaced, 10 pt | Submitted, 16.5 / 20 |
 | Midterm presentation | 2 slides, **3 min including Q&A**, 1 presenter, slides due **24 h before our slot** on the shared deck | Slot: **group 24, Oct 22** (time of day not recorded). Slides due 24 h before, i.e. **Oct 21** at the slot time |
 | Midterm report | 4 pages, single-spaced, 10 pt | Due: _fill in_ |
-| Final presentation | 5 slides, 6 min + 2 min Q&A, 2 to 3 presenters | Due: _fill in_ |
-| Final report | 8 pages main text, up to 15 with appendix and references, single-spaced, 10 pt; must incorporate midterm feedback | Due: _fill in_ |
+| Final presentation | 4 to 5 slides, **5 min + 1 min Q&A, hard stop at 5 min** (Piazza rubric) | Presentation **Tuesday Nov 24, 2026** (per Aakash); slides due on the shared deck **24 h before our slot** (Piazza) |
+| Final report | 8 pages main text, up to 15 with appendix and references, single-spaced, 10 pt; must incorporate midterm feedback | Due: **about Dec 10, 2026** ("3 weeks" from 2026-11-19, per Aakash; confirm exact date) |
 
 The final report must answer: what we tried to do (no jargon); who cares; how it's done today and its limits; what's new and why we expected it to work; how we ran experiments, which hypotheses they tested and how we evaluated them; results and what we discovered; whether hypotheses were supported; main takeaways; what we'd do next and what new questions arose.
 

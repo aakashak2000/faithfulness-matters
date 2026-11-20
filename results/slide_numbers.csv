@@ -1,0 +1,20 @@
+item,key,value
+example_clip,row,12
+example_clip,speaker,Rachel
+example_clip,utterance,"Ross, didn't you say that there was an elevator in here?"
+example_clip,gold,neutral
+example_clip,text_head_top,surprise
+example_clip,text_head_prob,0.2768980860710144
+example_clip,audio_head_top,neutral
+example_clip,audio_head_prob,0.685512900352478
+example_clip,gate_text_weight,0.6094799041748047
+example_clip,fused_prediction,neutral
+example_clip,text_swap_effect,0.023309379816055298
+example_clip,audio_swap_effect,0.20312955975532532
+example_clip,n_qualifying_rows,127
+phase2_mean_text_weight,Control,0.5854206681251526
+phase2_mean_text_weight,Overconfident voice,0.7749052047729492
+phase2_mean_text_weight,Sharper voice,0.6850730180740356
+phase2_mean_text_weight,Flatter voice,0.671311616897583
+phase2_mean_text_weight,30% wrong audio,0.7703441977500916
+phase2_mean_text_weight,S0 (reference for sharper/flatter),0.5806076526641846

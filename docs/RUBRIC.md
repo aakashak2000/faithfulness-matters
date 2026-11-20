@@ -51,4 +51,20 @@ Required content per the course page (4 pages, single-spaced, 10 pt). Use these 
 
 ## Final presentation and report
 
-Final presentation: 6 minutes, 5 slides, plus 2 minutes of Q&A; 2 to 3 presenters; graded on clarity, completeness and presentation quality. Final report: 8 pages main text plus up to 15 pages of appendix and references. Full requirements in `docs/PROJECT_REQUIREMENTS.md`. Detailed rubrics not yet published; add them here when they are.
+Final report: 8 pages main text plus up to 15 pages of appendix and references. Full requirements in `docs/PROJECT_REQUIREMENTS.md`.
+
+### Final presentation (Piazza "Final Project Presentation Rubric", copied 2026-11-19)
+Slides due 24 h before our slot on the shared deck. **5 minutes to present, then 1 minute of Q&A; stopped at 5 minutes, and content not presented is not graded.** Focus: what we accomplished and found. Suggested structure (4 to 5 slides):
+1. Brief recap of problem, method, and differentiation from prior work; note anything that changed since the midterm.
+2. Experimental setup: data, baselines, evaluation metrics.
+3-4. Main results and analysis (comparison to baselines, ablations, error analysis, qualitative examples).
+5. Main takeaways, limitations.
+
+Grading, total 10 (peers and instructors use the same rubric):
+- Clarity (1): problem explicit and motivated, including the inputs/outputs of the central task; method concise, leaving most time for results.
+- Novelty (1): names specific prior work and says how the project goes beyond it (vague, uncited references get 0.5).
+- Progress since the midterm (2): concrete work completed since the midterm, relative to the plan presented then; changes in direction explained and justified.
+- Results (3): concrete results with a clearly defined setup (data, metrics), compared against at least one meaningful baseline or prior method; readable, labelled tables and figures.
+- Analysis and takeaways (1): why the results look the way they do (ablations, error analysis, failure cases), a clear main takeaway, honest limitations.
+- Presentation (1): organised, finishes within 5 minutes, slides clear and not overloaded with text.
+- Q&A (1): direct, concise answers that draw on the team's results.
